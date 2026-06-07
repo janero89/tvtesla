@@ -773,6 +773,26 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
     </div>
   </div>
 
+  <!-- Pegar M3U desde texto -->
+  <div class="lista-url-box">
+    <div class="lista-box-title">📋 Pegar lista M3U desde texto</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">
+      Copia el contenido de tu archivo .m3u o bloc de notas y pégalo aquí directamente.
+    </div>
+    <textarea id="listaTextInput"
+      placeholder="#EXTM3U&#10;#EXTINF:-1,Mi Canal&#10;https://stream.ejemplo.com/live.m3u8&#10;#EXTINF:-1,Otro Canal&#10;https://otro.ejemplo.com/live.m3u8"
+      style="width:100%;min-height:120px;background:#1a1a1a;border:1px solid #333;border-radius:6px;
+             padding:10px 12px;color:var(--text);font-family:monospace;font-size:11px;
+             outline:none;resize:vertical;transition:border-color .2s;box-sizing:border-box;"
+      onfocus="this.style.borderColor='var(--red)'"
+      onblur="this.style.borderColor='#333'"
+    ></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button class="lista-btn" onclick="cargarListaTexto()" style="flex:1;">✚ Importar canales</button>
+      <button class="lista-btn secondary" onclick="document.getElementById('listaTextInput').value=''">✕ Limpiar</button>
+    </div>
+  </div>
+
   <!-- Añadir canal manual -->
   <div class="lista-manual-box">
     <div class="lista-box-title">➕ Añadir canal manualmente</div>
@@ -1282,6 +1302,24 @@ function parseM3U(text) {
   return channels;
 }
 
+function cargarListaTexto() {
+  const text = document.getElementById('listaTextInput').value.trim();
+  if (!text) { showToast('Pega el contenido M3U primero'); return; }
+  const parsed = parseM3U(text);
+  if (!parsed.length) { showToast('No se encontraron canales. ¿Es formato M3U?'); return; }
+  const existing = loadLista();
+  const merged = [...existing];
+  let added = 0;
+  parsed.forEach(ch => {
+    if (!merged.find(x => x.url === ch.url)) { merged.push(ch); added++; }
+  });
+  saveLista(merged);
+  syncChannels();
+  renderListaGrid();
+  document.getElementById('listaTextInput').value = '';
+  showToast('✅ ' + added + ' canales importados (' + parsed.length + ' en lista)');
+}
+
 function exportarLista() {
   const list = loadLista();
   if (!list.length) { showToast('Sin canales que exportar'); return; }
@@ -1295,10 +1333,6 @@ function exportarLista() {
   showToast('📥 Lista exportada');
 }
 
-// ===== DONATE =====
-// ===== DONATE =====
-// ===== DONATE =====
-// ===== DONATE =====
 // ===== DONATE =====
 let selectedAmount = '1';
 function selectAmount(el, val) {
