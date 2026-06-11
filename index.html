@@ -257,8 +257,8 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 .lista-progress-txt { font-size:12px; color:var(--text3); }
 
 /* DONATE */
-.donate-btn { position:fixed; bottom:22px; right:22px; background:#009cde; color:#fff; border:none; border-radius:50px; padding:11px 20px; font-family:'Inter'; font-size:12px; font-weight:700; cursor:pointer; z-index:150; display:flex; align-items:center; gap:7px; box-shadow:0 4px 18px rgba(0,156,222,.4); transition:all .25s; text-decoration:none; letter-spacing:.3px; }
-.donate-btn:hover { background:#007ab8; transform:translateY(-2px); }
+.donate-btn { position:fixed; bottom:22px; right:22px; background:#FFDD00; color:#000; border:none; border-radius:50px; padding:11px 20px; font-family:'Inter'; font-size:12px; font-weight:700; cursor:pointer; z-index:150; display:flex; align-items:center; gap:7px; box-shadow:0 4px 18px rgba(255,221,0,.4); transition:all .25s; text-decoration:none; letter-spacing:.3px; }
+.donate-btn:hover { background:#e6c700; transform:translateY(-2px); }
 .donate-modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:600; align-items:center; justify-content:center; backdrop-filter:blur(8px); }
 .donate-modal-bg.open { display:flex; }
 .donate-modal { background:#1a1a1a; border:1px solid #2a2a2a; border-radius:16px; padding:32px 28px; width:min(380px,90vw); text-align:center; position:relative; }
@@ -270,8 +270,8 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 .donate-amount { background:#222; border:2px solid #333; border-radius:7px; padding:9px 16px; color:#fff; font-size:14px; font-weight:700; cursor:pointer; transition:all .2s; }
 .donate-amount:hover,.donate-amount.selected { border-color:#009cde; background:rgba(0,156,222,.15); color:#009cde; }
 .donate-custom { width:100%; background:#111; border:1px solid #333; border-radius:7px; padding:9px 12px; color:#fff; font-family:'Inter'; font-size:14px; text-align:center; outline:none; margin-bottom:16px; }
-.donate-go { width:100%; background:#009cde; color:#fff; border:none; border-radius:7px; padding:13px; font-family:'Inter'; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px; }
-.donate-go:hover { background:#007ab8; }
+.donate-go { width:100%; background:#FFDD00; color:#fff; border:none; border-radius:7px; padding:13px; font-family:'Inter'; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px; }
+.donate-go:hover { background:#e6c700; }
 
 /* RESPONSIVE */
 @media(max-width:768px){
@@ -460,27 +460,9 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 </div>
 
 <!-- DONATE -->
-<button class="donate-btn" onclick="document.getElementById('donateBg').classList.add('open')">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.067 8.478c.492.88.556 2.014.3 3.327-.74 3.806-3.286 5.12-6.436 5.12h-.2c-.47 0-.87.34-.94.808l-.02.09-.734 4.653-.026.143c-.07.47-.47.808-.94.808H7.854a.57.57 0 01-.565-.65L8.24 17h2.776c3.6 0 6.4-1.46 7.22-5.688.34-1.734.166-3.18-.587-4.22.51.118.984.31 1.418.586z"/><path d="M17.553 5.232C16.582 4.13 14.737 3.5 12.3 3.5H5.858a.94.94 0 00-.93.796L2.87 17.579a.565.565 0 00.557.65h3.74l.94-5.953-.03.18a.94.94 0 01.93-.796h1.938c3.8 0 6.776-1.544 7.647-6.01.026-.13.048-.258.067-.384a5.065 5.065 0 00-1.106-.034z"/></svg>
-  Donar
-</button>
-<div class="donate-modal-bg" id="donateBg">
-  <div class="donate-modal">
-    <button class="donate-close" onclick="document.getElementById('donateBg').classList.remove('open')">✕</button>
-    <div style="font-size:38px;margin-bottom:10px;">💙</div>
-    <div class="donate-title">Apoya <em>TV Tesla</em></div>
-    <p class="donate-sub">Si disfrutas el servicio gratuito,<br>puedes apoyar con una donación voluntaria.</p>
-    <div class="donate-amounts">
-      <div class="donate-amount selected" onclick="selectAmount(this,'1')">1€</div>
-      <div class="donate-amount" onclick="selectAmount(this,'3')">3€</div>
-      <div class="donate-amount" onclick="selectAmount(this,'5')">5€</div>
-      <div class="donate-amount" onclick="selectAmount(this,'10')">10€</div>
-    </div>
-    <input class="donate-custom" id="donateCustom" type="number" min="1" placeholder="Otro monto (€)" oninput="clearSelected()"/>
-    <button class="donate-go" onclick="goDonate()">💙 Donar con PayPal</button>
-    <p style="font-size:10px;color:#444;margin-top:12px;">Serás redirigido a PayPal de forma segura.</p>
-  </div>
-</div>
+<a class="donate-btn" href="https://buymeacoffee.com/janero89" target="_blank">
+  ☕ Invítame a un café
+</a>
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
 <script>
@@ -686,11 +668,11 @@ function exportarLista(){const list=loadLista();if(!list.length){showToast('Sin 
 // ═══════════════════════════════════════════
 // DONATE
 // ═══════════════════════════════════════════
-let selectedAmount='1';
-function selectAmount(el,val){document.querySelectorAll('.donate-amount').forEach(d=>d.classList.remove('selected'));el.classList.add('selected');selectedAmount=val;document.getElementById('donateCustom').value='';}
-function clearSelected(){document.querySelectorAll('.donate-amount').forEach(d=>d.classList.remove('selected'));selectedAmount=null;}
-function goDonate(){const custom=document.getElementById('donateCustom').value;const amount=custom?parseFloat(custom).toFixed(2):parseFloat(selectedAmount).toFixed(2);if(!amount||isNaN(amount)||amount<=0)return;window.open(`https://www.paypal.com/donate/?business=janner_obredor89%40hotmail.com&amount=${amount}&currency_code=EUR&item_name=Donaci%C3%B3n+TV+Tesla`,'_blank');document.getElementById('donateBg').classList.remove('open');}
-document.getElementById('donateBg').addEventListener('click',e=>{if(e.target===document.getElementById('donateBg'))document.getElementById('donateBg').classList.remove('open');});
+
+
+
+
+
 
 // ═══════════════════════════════════════════
 // KEYBOARD & TOAST
@@ -703,7 +685,7 @@ document.addEventListener('keydown',e=>{
     if(e.key.toLowerCase()==='f')toggleFS();
     if(e.key.toLowerCase()==='r')refreshStream();
   }
-  if(e.key==='Escape')document.getElementById('donateBg').classList.remove('open');
+  
 });
 let toastT;
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2500);}
