@@ -589,7 +589,7 @@ async function pelCargar(p=1) {
   document.getElementById('pelMain').innerHTML='<div class="pel-loader"><div class="pel-spinner"></div> Cargando…</div>';
   document.getElementById('pelPag').innerHTML='';
   try {
-    const r=await fetch(`${TMDB_BASE}/movie/${pelModoActual}?api_key=${TMDB_KEY}&language=es-ES&page=${p}&region=ES`);
+    const r=await fetch(`${TMDB_BASE}/movie/${pelModoActual}?api_key=${TMDB_KEY}&language=es-ES&page=${p}&region=ES&include_image_language=es,null`);
     const d=await r.json();
     if(!d.results?.length) throw new Error();
     document.getElementById('pelInfo').textContent=`${d.total_results?.toLocaleString()} películas · Página ${p}`;
@@ -625,7 +625,7 @@ function pelAbrir(tmdbId, title, year) {
   pelScrollY=document.querySelector('.pel-grid-wrap').scrollTop;
   document.getElementById('pelNowTitle').textContent=title;
   document.getElementById('pelNowYear').textContent=year;
-  document.getElementById('pel-frame').src=`https://vidsrc.pm/embed/movie/${tmdbId}`;
+  document.getElementById('pel-frame').src=`https://vidsrc.pm/embed/movie/${tmdbId}?ds_lang=es`;
   document.getElementById('pel-player').style.display='block';
   window.scrollTo({top:0});
 }
@@ -642,7 +642,7 @@ async function pelBuscar() {
   document.getElementById('pelPag').innerHTML='';
   document.getElementById('pelTitle').textContent=`"${q}"`;
   try {
-    const r=await fetch(`${TMDB_BASE}/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}&language=es-ES`);
+    const r=await fetch(`${TMDB_BASE}/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}&language=es-ES&include_image_language=es,null`);
     const d=await r.json();
     if(!d.results?.length){document.getElementById('pelMain').innerHTML='<div class="pel-loader">Sin resultados</div>';return;}
     document.getElementById('pelInfo').textContent=`${d.results.length} resultados`;
