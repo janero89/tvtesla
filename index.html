@@ -178,6 +178,22 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 .pel-tab:hover { color:#fff; border-color:#555; }
 .pel-tab.active { background:var(--red); border-color:var(--red); color:#fff; }
 
+.pel-genres-bar {
+  display:flex; gap:7px; overflow-x:auto; padding:10px 28px 8px;
+  flex-shrink:0; border-bottom:1px solid #1e1e1e;
+  scrollbar-width:none; -ms-overflow-style:none;
+  background:rgba(20,20,20,.6);
+}
+.pel-genres-bar::-webkit-scrollbar { display:none; }
+.pel-genre {
+  background:transparent; border:1px solid #2a2a2a;
+  border-radius:20px; padding:5px 14px; color:#666;
+  font-size:.75rem; font-weight:600; cursor:pointer;
+  font-family:'Inter',sans-serif; white-space:nowrap;
+  transition:all .2s; flex-shrink:0;
+}
+.pel-genre:hover { color:#fff; border-color:#555; }
+.pel-genre.active { background:var(--red); border-color:var(--red); color:#fff; }
 .pel-info-bar { display:flex; align-items:baseline; justify-content:space-between; padding:16px 28px 10px; flex-shrink:0; }
 .pel-info-bar h2 { font-size:1.1rem; font-weight:600; }
 .pel-info-bar span { font-size:.75rem; color:#555; }
@@ -282,6 +298,7 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
   .pel-topbar{padding:10px 14px;}
   .pel-grid-wrap{padding:0 14px 60px;}
   .pel-info-bar{padding:12px 14px 8px;}
+  .pel-genres-bar{padding:8px 14px 6px;}
   .pel-pag{padding:12px 14px 24px;}
 }
 @media(max-width:480px){
@@ -326,6 +343,10 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
       <button class="pel-tab" onclick="pelModo('top_rated',this)">⭐ Top</button>
       <button class="pel-tab" onclick="pelModo('upcoming',this)">📅 Próximas</button>
     </div>
+  </div>
+  <!-- GÉNEROS -->
+  <div class="pel-genres-bar" id="pelGenresBar">
+    <button class="pel-genre active" onclick="pelGenero(0,this)">Todos</button>
   </div>
   <div class="pel-info-bar">
     <h2 id="pelTitle">Películas populares</h2>
@@ -564,14 +585,62 @@ const TMDB_BASE='https://api.themoviedb.org/3';
 const TMDB_IMG='https://image.tmdb.org/t/p/w300';
 const PEL_TITULOS={popular:'Películas populares',now_playing:'En cines ahora',top_rated:'Mejor valoradas',upcoming:'Próximos estrenos'};
 
-let pelModoActual='popular', pelPagina=1, pelScrollY=0, pelCargado=false;
+let pelModoActual='popular', pelPagina=1, pelScrollY=0, pelCargado=false, pelGeneroActual=0;
+
+// Géneros TMDB con emojis
+const PEL_GENEROS = [
+  {id:28,name:'Acción',emoji:'💥'},
+  {id:12,name:'Aventura',emoji:'🗺️'},
+  {id:16,name:'Animación',emoji:'🎨'},
+  {id:35,name:'Comedia',emoji:'😂'},
+  {id:80,name:'Crimen',emoji:'🔪'},
+  {id:99,name:'Documental',emoji:'📹'},
+  {id:18,name:'Drama',emoji:'🎭'},
+  {id:10751,name:'Familia',emoji:'👨‍👩‍👧'},
+  {id:14,name:'Fantasía',emoji:'🧙'},
+  {id:36,name:'Historia',emoji:'📜'},
+  {id:27,name:'Terror',emoji:'👻'},
+  {id:10402,name:'Música',emoji:'🎵'},
+  {id:9648,name:'Misterio',emoji:'🔍'},
+  {id:10749,name:'Romance',emoji:'❤️'},
+  {id:878,name:'Ciencia ficción',emoji:'🚀'},
+  {id:53,name:'Thriller',emoji:'😰'},
+  {id:10752,name:'Bélica',emoji:'⚔️'},
+  {id:37,name:'Western',emoji:'🤠'},
+];
+
+function pelIniciarGeneros() {
+  const bar = document.getElementById('pelGenresBar');
+  PEL_GENEROS.forEach(g => {
+    const b = document.createElement('button');
+    b.className = 'pel-genre';
+    b.textContent = `${g.emoji} ${g.name}`;
+    b.onclick = () => pelGenero(g.id, b);
+    bar.appendChild(b);
+  });
+}
+
+function pelGenero(id, btn) {
+  pelGeneroActual = id;
+  document.querySelectorAll('.pel-genre').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  pelCargado = false;
+  pelCargar(1);
+}
 
 async function pelCargar(p=1) {
   pelPagina=p;
   document.getElementById('pelMain').innerHTML='<div class="pel-loader"><div class="pel-spinner"></div> Cargando…</div>';
   document.getElementById('pelPag').innerHTML='';
   try {
-    const r=await fetch(`${TMDB_BASE}/movie/${pelModoActual}?api_key=${TMDB_KEY}&language=es-ES&page=${p}&region=ES&include_image_language=es,null`);
+    let url;
+    if (pelGeneroActual) {
+      // Filtrar por género
+      url = `${TMDB_BASE}/discover/movie?api_key=${TMDB_KEY}&language=es-ES&page=${p}&region=ES&with_genres=${pelGeneroActual}&sort_by=popularity.desc&include_image_language=es,null`;
+    } else {
+      url = `${TMDB_BASE}/movie/${pelModoActual}?api_key=${TMDB_KEY}&language=es-ES&page=${p}&region=ES&include_image_language=es,null`;
+    }
+    const r=await fetch(url);
     const d=await r.json();
     if(!d.results?.length) throw new Error();
     document.getElementById('pelInfo').textContent=`${d.total_results?.toLocaleString()} películas · Página ${p}`;
@@ -633,9 +702,12 @@ async function pelBuscar() {
 }
 
 function pelModo(m, btn) {
-  pelModoActual=m; pelCargado=false;
+  pelModoActual=m; pelCargado=false; pelGeneroActual=0;
   document.querySelectorAll('.pel-tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  // Reset género a "Todos"
+  document.querySelectorAll('.pel-genre').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.pel-genre').classList.add('active');
   document.getElementById('pelTitle').textContent=PEL_TITULOS[m];
   document.getElementById('pelQ').value='';
   pelCargar(1);
@@ -695,6 +767,7 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 // ═══════════════════════════════════════════
 channels = loadChannels();
 renderChannels();
+pelIniciarGeneros();
 </script>
 </body>
 </html>
