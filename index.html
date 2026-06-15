@@ -750,12 +750,14 @@ async function pelBuscar() {
   document.getElementById('pelTitle').textContent=`"${q}"`;
   try {
     let searchUrl = `${TMDB_BASE}/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}&language=es-ES&include_image_language=es,null`;
-    if (pelSoloEs) searchUrl += `&with_original_language=es`;
     const r=await fetch(searchUrl);
     const d=await r.json();
-    if(!d.results?.length){document.getElementById('pelMain').innerHTML='<div class="pel-loader">Sin resultados</div>';return;}
-    document.getElementById('pelInfo').textContent=`${d.results.length} resultados`;
-    pelRenderGrid(d.results);
+    let results = d.results || [];
+    // TMDB search/movie no soporta with_original_language, filtramos en cliente
+    if (pelSoloEs) results = results.filter(m => m.original_language === 'es');
+    if(!results.length){document.getElementById('pelMain').innerHTML='<div class="pel-loader">Sin resultados</div>';return;}
+    document.getElementById('pelInfo').textContent=`${results.length} resultados`;
+    pelRenderGrid(results);
   } catch(e){document.getElementById('pelMain').innerHTML='<div class="pel-loader">Error al buscar</div>';}
 }
 
