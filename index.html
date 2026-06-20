@@ -107,8 +107,20 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 .ch-name { font-size:12px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .ch-cat { font-size:10px; color:var(--red); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-/* PLAYER TV */
-#player-screen { position:fixed !important; inset:0 !important; top:0 !important; z-index:300; flex-direction:column; background:#000; display:none; }
+/* Tesla fullscreen via CSS */
+#player-screen.tesla-fs {
+  position:fixed !important;
+  inset:0 !important;
+  top:0 !important;
+  left:0 !important;
+  width:100vw !important;
+  height:100vh !important;
+  z-index:9999 !important;
+}
+#player-screen.tesla-fs .main-nav { display:none !important; }
+
+/* Logos más grandes en las tarjetas */
+.ch-thumb-logo { width:65%; max-height:65%; object-fit:contain; }
 .player-wrap { position:relative; width:100%; height:100%; overflow:hidden; }
 #video { width:100%; height:100%; object-fit:contain; background:#000; }
 #iframe-embed { width:100%; height:100%; border:none; background:#000; display:none; }
@@ -731,13 +743,37 @@ function hideRefresh(){document.getElementById('plRefresh').classList.remove('vi
 function refreshStream(){const ch=channels.find(c=>c.id===currentId);if(!ch)return;hideRefresh();showToast('🔄 Refrescando...');loadStream(ch.url);}
 function buildRail(){const rail=document.getElementById('plRail');rail.innerHTML='';channels.forEach(ch=>{const item=document.createElement('div');item.className='rail-item';item.id='rail-'+ch.id;item.innerHTML=`<div class="rail-thumb">${ch.logo?`<img src="${ch.logo}" onerror="this.remove()" />`:'<span>📺</span>'}</div><div class="rail-name">${ch.name}</div>`;item.onclick=()=>playChannel(ch.id);rail.appendChild(item);});}
 function highlightRail(id){document.querySelectorAll('.rail-item').forEach(el=>el.classList.remove('active'));const el=document.getElementById('rail-'+id);if(el){el.classList.add('active');el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});}}
-function closePlayer(){clearInterval(checkInterval);stopStream();if(document.fullscreenElement)document.exitFullscreen();document.getElementById('player-screen').style.display='none';}
+function closePlayer(){
+  clearInterval(checkInterval); stopStream();
+  const ps = document.getElementById('player-screen');
+  ps.classList.remove('tesla-fs');
+  if(document.fullscreenElement) document.exitFullscreen();
+  ps.style.display='none';
+}
 function showOverlay(){const o=document.getElementById('plOverlay');o.classList.remove('hidden');clearTimeout(overlayTimer);overlayTimer=setTimeout(()=>o.classList.add('hidden'),5000);}
 document.getElementById('playerWrap').addEventListener('click',e=>{if(e.target.closest('.pl-refresh'))return;const o=document.getElementById('plOverlay');if(o.classList.contains('hidden'))showOverlay();else o.classList.add('hidden');});
 document.getElementById('plOverlay').addEventListener('mousemove',showOverlay);
 function toggleMute(){const v=document.getElementById('video');muted=!muted;v.muted=muted;const ico=muted?'🔇':'🔊';document.getElementById('muteBtn').textContent=ico;document.getElementById('muteBtnB').textContent=ico;const t=document.getElementById('plMuteToast');t.textContent=ico;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),1400);}
 function setVol(v){const vid=document.getElementById('video');vid.volume=parseFloat(v);if(parseFloat(v)===0){muted=true;vid.muted=true;}else{muted=false;vid.muted=false;}document.getElementById('muteBtn').textContent=muted?'🔇':'🔊';document.getElementById('muteBtnB').textContent=muted?'🔇':'🔊';}
-function toggleFS(){if(!document.fullscreenElement)document.getElementById('player-screen').requestFullscreen?.();else document.exitFullscreen?.();}
+function toggleFS(){
+  const ps = document.getElementById('player-screen');
+  const btn1 = document.querySelectorAll('.pl-btn')[2]; // fs button
+  if (ps.classList.contains('tesla-fs')) {
+    ps.classList.remove('tesla-fs');
+    document.querySelectorAll('.pl-fs,.pl-btn').forEach(b=>{ if(b.textContent==='✕✕'||b.textContent==='⛶'||b.innerHTML==='⛶') b.textContent='⛶'; });
+  } else {
+    // Intentar API nativa primero, si falla usar CSS
+    const req = ps.requestFullscreen || ps.webkitRequestFullscreen || ps.mozRequestFullScreen;
+    if (req) {
+      req.call(ps).catch(()=> ps.classList.add('tesla-fs'));
+    } else {
+      ps.classList.add('tesla-fs');
+    }
+  }
+  // actualizar icono
+  const isFs = ps.classList.contains('tesla-fs') || !!document.fullscreenElement;
+  document.querySelectorAll('.pl-fs, .pl-btn').forEach(b=>{ if(b.onclick && b.onclick.toString().includes('toggleFS')) b.textContent = isFs ? '✕' : '⛶'; });
+}
 function tickClock(){const el=document.getElementById('plClock');if(el)el.textContent=new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});if(document.getElementById('player-screen').style.display!=='none')setTimeout(tickClock,15000);}
 
 // ═══════════════════════════════════════════
