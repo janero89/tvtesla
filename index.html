@@ -761,8 +761,17 @@ function closePlayer(){
   if(document.fullscreenElement) document.exitFullscreen();
   ps.style.display='none';
 }
-function showOverlay(){const o=document.getElementById('plOverlay');o.classList.remove('hidden');clearTimeout(overlayTimer);overlayTimer=setTimeout(()=>o.classList.add('hidden'),5000);}
-function resetOverlayTimer(){clearTimeout(overlayTimer);overlayTimer=setTimeout(()=>document.getElementById('plOverlay').classList.add('hidden'),5000);}
+function showOverlay(){const o=document.getElementById('plOverlay');o.classList.remove('hidden');clearTimeout(overlayTimer);overlayTimer=setTimeout(()=>{ if(!railTouching) o.classList.add('hidden'); },5000);}
+let railTouching = false;
+function resetOverlayTimer(){clearTimeout(overlayTimer);overlayTimer=setTimeout(()=>{ if(!railTouching) document.getElementById('plOverlay').classList.add('hidden'); },5000);}
+
+// Pausar timer mientras el dedo esté en la barra de canales o controles
+const plBottom = document.getElementById('plRail').closest('.pl-bottom') || document.querySelector('.pl-bottom');
+if(plBottom){
+  plBottom.addEventListener('touchstart', ()=>{ railTouching=true; clearTimeout(overlayTimer); }, {passive:true});
+  plBottom.addEventListener('touchend',   ()=>{ railTouching=false; resetOverlayTimer(); }, {passive:true});
+  plBottom.addEventListener('touchcancel',()=>{ railTouching=false; resetOverlayTimer(); }, {passive:true});
+}
 document.getElementById('playerWrap').addEventListener('click',e=>{
   if(e.target.closest('.pl-refresh')) return;
   if(e.target.closest('.pl-bottom')||e.target.closest('.pl-top-btns')||e.target.closest('.rail-item')) { resetOverlayTimer(); return; }
