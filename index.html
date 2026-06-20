@@ -500,6 +500,7 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
     <div class="lista-box-title">📋 Pegar lista M3U desde texto</div>
     <textarea id="listaTextInput" placeholder="#EXTM3U&#10;#EXTINF:-1,Mi Canal&#10;https://stream.ejemplo.com/live.m3u8" style="width:100%;min-height:120px;background:#1a1a1a;border:1px solid #333;border-radius:6px;padding:10px 12px;color:var(--text);font-family:monospace;font-size:11px;outline:none;resize:vertical;box-sizing:border-box;"></textarea>
     <div style="display:flex;gap:8px;margin-top:10px;">
+      <button class="lista-btn" onclick="pegarPortapapeles()" style="background:#2a2a2a;border:1px solid #444;">📋 Pegar</button>
       <button class="lista-btn" onclick="cargarListaTexto()" style="flex:1;">✚ Importar canales</button>
       <button class="lista-btn secondary" onclick="document.getElementById('listaTextInput').value=''">✕ Limpiar</button>
     </div>
@@ -949,6 +950,23 @@ function borrarTodaLista(){if(!loadLista().length)return;if(!confirm('¿Eliminar
 function playListaChannel(ch){const found=channels.find(x=>x.url===ch.url);const id=found?found.id:('lista_direct_'+Date.now());if(!found)channels.push({id,name:ch.name,url:ch.url,logo:'',emoji:'📋',category:'Mi Lista'});currentId=id;document.getElementById('plChName').textContent=ch.name.toUpperCase();document.getElementById('video').style.display='block';document.getElementById('iframe-embed').style.display='none';document.getElementById('player-screen').style.display='flex';loadStream(ch.url);buildRail();highlightRail(id);showOverlay();tickClock();}
 async function cargarListaRemota(){const url=document.getElementById('listaUrlInput').value.trim();if(!url||!url.startsWith('http')){showToast('Introduce una URL válida');return;}const prog=document.getElementById('listaProgress'),txt=document.getElementById('listaProgressTxt');prog.classList.add('on');txt.textContent='Descargando lista...';try{const res=await fetch('https://corsproxy.io/?'+encodeURIComponent(url),{signal:AbortSignal.timeout(15000)});if(!res.ok)throw new Error('HTTP '+res.status);const text=await res.text();txt.textContent='Procesando canales...';const parsed=parseM3U(text);if(!parsed.length){showToast('No se encontraron canales');prog.classList.remove('on');return;}const existing=loadLista();const merged=[...existing];let added=0;parsed.forEach(ch=>{if(!merged.find(x=>x.url===ch.url)){merged.push(ch);added++;}});saveLista(merged);prog.classList.remove('on');renderListaGrid();syncChannels();showToast('✅ '+added+' canales añadidos');document.getElementById('listaUrlInput').value='';document.getElementById('listaUrlClear').style.display='none';}catch(e){prog.classList.remove('on');showToast('Error: '+(e.message||'No se pudo descargar'));}}
 function parseM3U(text){const lines=text.split('\n');const channels=[];let current=null;for(let line of lines){line=line.trim();if(line.startsWith('#EXTINF')){const m=line.match(/,(.+)$/);current={name:m?m[1].trim():'Canal',url:''};}else if(current&&line&&!line.startsWith('#')){current.url=line;channels.push(current);current=null;}}return channels;}
+async function pegarPortapapeles(){
+  try {
+    const text = await navigator.clipboard.readText();
+    if (!text) { showToast('El portapapeles está vacío'); return; }
+    document.getElementById('listaTextInput').value = text;
+    showToast('📋 Pegado desde portapapeles');
+  } catch(e) {
+    // Fallback por si el navegador del Tesla no soporta clipboard API
+    try {
+      document.getElementById('listaTextInput').focus();
+      document.execCommand('paste');
+      showToast('📋 Pegado');
+    } catch(e2) {
+      showToast('⚠ Usa Ctrl+V para pegar manualmente');
+    }
+  }
+}
 function cargarListaTexto(){const text=document.getElementById('listaTextInput').value.trim();if(!text){showToast('Pega el contenido M3U primero');return;}const parsed=parseM3U(text);if(!parsed.length){showToast('No se encontraron canales');return;}const existing=loadLista();const merged=[...existing];let added=0;parsed.forEach(ch=>{if(!merged.find(x=>x.url===ch.url)){merged.push(ch);added++;}});saveLista(merged);syncChannels();renderListaGrid();document.getElementById('listaTextInput').value='';showToast('✅ '+added+' canales importados');}
 function exportarLista(){const list=loadLista();if(!list.length){showToast('Sin canales que exportar');return;}let m3u='#EXTM3U\n';list.forEach(ch=>{m3u+='#EXTINF:-1,'+ch.name+'\n'+ch.url+'\n';});const blob=new Blob([m3u],{type:'audio/x-mpegurl'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mi_lista_tvcar.m3u';a.click();showToast('📥 Lista exportada');}
 
