@@ -52,6 +52,7 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
   display:flex; align-items:center;
   padding:0 28px; z-index:100;
   backdrop-filter:blur(10px);
+  transition:transform .4s ease, opacity .4s ease;
 }
 .nav-logo {
   font-family:'Bebas Neue'; font-size:26px; letter-spacing:3px;
@@ -1077,6 +1078,43 @@ document.addEventListener('webkitfullscreenchange', ()=>{
 channels = loadChannels();
 renderChannels();
 pelIniciarGeneros();
+
+// ═══════════════════════════════════════════
+// AUTO-OCULTAR NAV Y BOTONES FLOTANTES
+// ═══════════════════════════════════════════
+let uiHideTimer = null;
+const UI_DELAY = 5000;
+
+function showUI() {
+  const nav = document.querySelector('.main-nav');
+  const donate = document.querySelector('.donate-btn');
+  const teslaRef = document.querySelector('.tesla-ref-btn');
+  nav.style.transform = 'translateY(0)'; nav.style.opacity = '1';
+  donate.style.opacity = '1'; donate.style.pointerEvents = 'all';
+  teslaRef.style.opacity = '1'; teslaRef.style.pointerEvents = 'all';
+  clearTimeout(uiHideTimer);
+  uiHideTimer = setTimeout(hideUI, UI_DELAY);
+}
+function hideUI() {
+  const nav = document.querySelector('.main-nav');
+  const donate = document.querySelector('.donate-btn');
+  const teslaRef = document.querySelector('.tesla-ref-btn');
+  nav.style.transform = 'translateY(-100%)'; nav.style.opacity = '0';
+  donate.style.opacity = '0'; donate.style.pointerEvents = 'none';
+  teslaRef.style.opacity = '0'; teslaRef.style.pointerEvents = 'none';
+}
+
+// Transición suave en nav y botones
+document.querySelector('.main-nav').style.transition = 'transform .4s ease, opacity .4s ease';
+document.querySelector('.donate-btn').style.transition = 'opacity .4s ease';
+document.querySelector('.tesla-ref-btn').style.transition = 'opacity .4s ease';
+
+// Mostrar al tocar o mover el ratón
+document.addEventListener('touchstart', showUI, {passive:true});
+document.addEventListener('mousemove', showUI, {passive:true});
+
+// Arrancar el timer inicial
+uiHideTimer = setTimeout(hideUI, UI_DELAY);
 </script>
 </div><!-- /appRoot -->
 
