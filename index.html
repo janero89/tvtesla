@@ -1179,4 +1179,31 @@ function hideUI() {
 
 // Transición suave en nav y botones
 document.querySelector('.main-nav').style.transition = 'transform .4s ease, opacity .4s ease';
-document.querySelector('.donate-btn').style.transition = 
+document.querySelector('.donate-btn').style.transition = 'opacity .4s ease';
+document.querySelector('.tesla-ref-btn').style.transition = 'opacity .4s ease';
+
+// Mostrar al tocar o mover el ratón
+document.addEventListener('touchstart', showUI, {passive:true});
+document.addEventListener('mousemove', showUI, {passive:true});
+
+// Arrancar el timer inicial
+uiHideTimer = setTimeout(hideUI, UI_DELAY);
+</script>
+</div><!-- /appRoot -->
+
+<script>
+// Si viene desde YouTube redirect (?fs=1) o está en standalone, entrar directo
+const params = new URLSearchParams(window.location.search);
+const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: fullscreen)').matches || window.matchMedia('(display-mode: standalone)').matches;
+const comesFromYT = params.get('fs') === '1';
+
+if (isStandalone || comesFromYT) {
+  document.getElementById('launchScreen').style.display = 'none';
+  document.getElementById('appRoot').style.display = 'block';
+} else {
+  document.getElementById('launchScreen').style.display = 'flex';
+  document.getElementById('appRoot').style.display = 'none';
+}
+</script>
+</body>
+</html>
