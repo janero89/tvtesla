@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TVTESLA</title>
+
+<!-- PWA: abre sin barra de navegador -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TVTESLA">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#141414">
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;TVTESLA&quot;,&quot;short_name&quot;:&quot;TVTESLA&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;fullscreen&quot;,&quot;background_color&quot;:&quot;%23141414&quot;,&quot;theme_color&quot;:&quot;%23141414&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23141414'/><text y='.9em' font-size='80' x='10'>📺</text></svg>&quot;,&quot;sizes&quot;:&quot;any&quot;,&quot;type&quot;:&quot;image/svg+xml&quot;}]}">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -381,6 +389,29 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 </style>
 </head>
 <body>
+
+<!-- PANTALLA DE LANZAMIENTO (solo si no está en modo standalone) -->
+<div id="launchScreen" style="display:none; position:fixed; inset:0; background:#141414; z-index:9999; flex-direction:column; align-items:center; justify-content:center; gap:28px; font-family:'Inter',sans-serif;">
+  <div style="font-family:'Bebas Neue'; font-size:48px; letter-spacing:6px; color:#e50914; text-shadow:0 0 30px rgba(229,9,20,.4);">TV<span style="color:#fff;">TESLA</span></div>
+  <div style="font-size:14px; color:#b3b3b3; text-align:center; line-height:1.8; max-width:380px;">
+    Para abrir en <strong style="color:#fff;">pantalla completa</strong> sin barra de navegación:<br>
+    Pulsa el botón de abajo y luego toca <strong style="color:#e50914;">"IR AL SITIO WEB"</strong>
+  </div>
+  <a id="ytLaunchBtn"
+     href="https://www.youtube.com/redirect?q=https://tv.mundotesla.online"
+     style="background:#e50914; color:#fff; text-decoration:none; border-radius:50px; padding:16px 36px; font-size:16px; font-weight:700; letter-spacing:1px; box-shadow:0 4px 20px rgba(229,9,20,.5); display:flex; align-items:center; gap:10px;">
+    ⛶ ABRIR PANTALLA COMPLETA
+  </a>
+  <div style="font-size:11px; color:#444; text-align:center; max-width:340px; line-height:1.7;">
+    O pulsa el icono <strong style="color:#666;">⛶</strong> de la esquina superior izquierda<br>del navegador Tesla
+  </div>
+  <button onclick="document.getElementById('launchScreen').style.display='none'; document.getElementById('appRoot').style.display='block';"
+    style="background:transparent; border:1px solid #333; border-radius:50px; padding:10px 24px; color:#555; font-size:12px; cursor:pointer; font-family:'Inter',sans-serif;">
+    Entrar sin pantalla completa
+  </button>
+</div>
+
+<div id="appRoot" style="display:none;">
 
 <div class="toast" id="toast"></div>
 
@@ -1046,6 +1077,21 @@ document.addEventListener('webkitfullscreenchange', ()=>{
 channels = loadChannels();
 renderChannels();
 pelIniciarGeneros();
+</script>
+</div><!-- /appRoot -->
+
+<script>
+// Detectar si está en modo standalone (PWA/pantalla completa) o navegador normal
+const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: fullscreen)').matches || window.matchMedia('(display-mode: standalone)').matches;
+if (isStandalone) {
+  // Ya está en pantalla completa, mostrar app directamente
+  document.getElementById('launchScreen').style.display = 'none';
+  document.getElementById('appRoot').style.display = 'block';
+} else {
+  // Mostrar pantalla de lanzamiento
+  document.getElementById('launchScreen').style.display = 'flex';
+  document.getElementById('appRoot').style.display = 'none';
+}
 </script>
 </body>
 </html>
