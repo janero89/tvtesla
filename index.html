@@ -519,7 +519,10 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 
 <!-- LISTA SCREEN -->
 <div class="screen" id="lista-screen" style="display:none;">
-  <div class="lista-header"><div class="lista-main-title">📋 Mi <span>Lista</span></div></div>
+  <div class="lista-header">
+    <div class="lista-main-title">📋 Mi <span>Lista</span></div>
+    <button class="lista-btn" onclick="cargarListaJanner()" style="background:linear-gradient(135deg,#cc0000,#e50914);margin-left:auto;">⚡ Cargar mi lista</button>
+  </div>
   <div class="lista-url-box">
     <div class="lista-box-title">🌐 Cargar lista M3U/M3U8 remota</div>
     <div class="lista-url-row">
@@ -1038,6 +1041,76 @@ async function pegarPortapapeles(){
     }
   }
 }
+async function cargarListaJanner(){
+  const pin = prompt('🔒 Introduce tu PIN para cargar la lista:');
+  if(pin === null) return;
+  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin));
+  const hex = Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(hex !== 'eb63a79fffef7c2c497b7923622d9b58acc5634cbe23e97b0953a1e1cada9b69') {
+    showToast('❌ PIN incorrecto'); return;
+  }
+  const m3u = `#EXTM3U
+#EXTINF:-1 group-title="Deportes",DCTV
+https://bufaloweb.com/httpsCON/bufalo9/index.m3u8
+#EXTINF:-1 group-title="Deportes",DCTV 2
+https://bufaloweb.com/httpsCON/bufalo10/index.m3u8
+#EXTINF:-1 group-title="Deportes",DCTV 3
+https://bufaloweb.com/httpsCON/bufalo11/index.m3u8
+#EXTINF:-1 group-title="Deportes",ESPN
+https://bufaloweb.com/httpsCON/bufalo3/index.m3u8
+#EXTINF:-1 group-title="Deportes",ESPN 2
+https://bufaloweb.com/httpsCON/bufalo4/index.m3u8
+#EXTINF:-1 group-title="Deportes",ESPN 3
+https://bufaloweb.com/httpsCON/bufalo5/index.m3u8
+#EXTINF:-1 group-title="Deportes",ESPN 4
+https://bufaloweb.com/httpsCON/bufalo6/index.m3u8
+#EXTINF:-1 group-title="Deportes",ESPN 5
+https://bufaloweb.com/httpsCON/bufalo7/index.m3u8
+#EXTINF:-1 group-title="Deportes",ESPN 6
+https://bufaloweb.com/httpsCON/bufalo8/index.m3u8
+#EXTINF:-1 group-title="Deportes",ESPN 7
+https://bufaloweb.com/httpsCON/bufalo12/index.m3u8
+#EXTINF:-1 group-title="Deportes",LIGA COL PPV 1
+https://s4.bufaloweb.com/bufalo1_b/tracks-v4a1/mono.ts.m3u8?token=65c54cae52f84d7d45e7caa6f9490f0022
+#EXTINF:-1 group-title="Deportes",LIGA COL PPV 2
+https://bufaloweb.com/bufalo2_b/index.m3u8?token=587e8a8144ef14eaf6d4b6ff6fce9d4c57
+#EXTINF:-1 group-title="Deportes",NBA
+https://bufaloweb.com/httpsCON/bufalo14/index.m3u8
+#EXTINF:-1 group-title="Deportes",TYC
+https://bufaloweb.com/httpsCON/bufalo13/index.m3u8
+#EXTINF:-1 group-title="Entretenimiento",HISTORY
+https://bufaloweb.com/httpsCON/bufalo26/index.m3u8
+#EXTINF:-1 group-title="Entretenimiento",LA KALLE
+https://mdstrm.com/live-stream-playlist/58d191f07290fbb058025843.m3u8
+#EXTINF:-1 group-title="Infantil",DISCOVERY KIDS
+https://bufaloweb.com/httpsCON/bufalo21/index.m3u8
+#EXTINF:-1 group-title="Infantil",DISNEY JR
+https://bufaloweb.com/httpsCON/bufalo19/index.m3u8
+#EXTINF:-1 group-title="Infantil",NICKELODEON
+https://bufaloweb.com/httpsCON/bufalo20/index.m3u8
+#EXTINF:-1 group-title="Noticias",CARACOL
+https://bufaloweb.com/httpsCON/bufalo22/index.m3u8
+#EXTINF:-1 group-title="Noticias",LA 1
+https://ztnr.rtve.es/ztnr/1688877.m3u8
+#EXTINF:-1 group-title="Noticias",RCN
+https://bufaloweb.com/httpsCON/bufalo23/index.m3u8
+#EXTINF:-1 group-title="Películas",HBO
+https://bufaloweb.com/httpsCON/bufalo15/index.m3u8
+#EXTINF:-1 group-title="Películas",HBO FAMILY
+https://bufaloweb.com/httpsCON/bufalo16/index.m3u8
+#EXTINF:-1 group-title="Películas",SPACE
+https://bufaloweb.com/httpsCON/bufalo17/index.m3u8
+#EXTINF:-1 group-title="Películas",TNT
+https://bufaloweb.com/httpsCON/bufalo18/index.m3u8`;
+  const parsed = parseM3U(m3u);
+  const existing = loadLista();
+  const merged = [...existing];
+  let added = 0;
+  parsed.forEach(ch => { if(!merged.find(x=>x.url===ch.url)){ merged.push(ch); added++; } });
+  saveLista(merged); syncChannels(); renderListaGrid();
+  showToast('✅ ' + added + ' canales cargados');
+}
+
 function cargarListaTexto(){const text=document.getElementById('listaTextInput').value.trim();if(!text){showToast('Pega el contenido M3U primero');return;}const parsed=parseM3U(text);if(!parsed.length){showToast('No se encontraron canales');return;}const existing=loadLista();const merged=[...existing];let added=0;parsed.forEach(ch=>{if(!merged.find(x=>x.url===ch.url)){merged.push(ch);added++;}});saveLista(merged);syncChannels();renderListaGrid();document.getElementById('listaTextInput').value='';showToast('✅ '+added+' canales importados');}
 function exportarLista(){const list=loadLista();if(!list.length){showToast('Sin canales que exportar');return;}let m3u='#EXTM3U\n';list.forEach(ch=>{m3u+='#EXTINF:-1,'+ch.name+'\n'+ch.url+'\n';});const blob=new Blob([m3u],{type:'audio/x-mpegurl'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mi_lista_tvcar.m3u';a.click();showToast('📥 Lista exportada');}
 
@@ -1106,31 +1179,4 @@ function hideUI() {
 
 // Transición suave en nav y botones
 document.querySelector('.main-nav').style.transition = 'transform .4s ease, opacity .4s ease';
-document.querySelector('.donate-btn').style.transition = 'opacity .4s ease';
-document.querySelector('.tesla-ref-btn').style.transition = 'opacity .4s ease';
-
-// Mostrar al tocar o mover el ratón
-document.addEventListener('touchstart', showUI, {passive:true});
-document.addEventListener('mousemove', showUI, {passive:true});
-
-// Arrancar el timer inicial
-uiHideTimer = setTimeout(hideUI, UI_DELAY);
-</script>
-</div><!-- /appRoot -->
-
-<script>
-// Si viene desde YouTube redirect (?fs=1) o está en standalone, entrar directo
-const params = new URLSearchParams(window.location.search);
-const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: fullscreen)').matches || window.matchMedia('(display-mode: standalone)').matches;
-const comesFromYT = params.get('fs') === '1';
-
-if (isStandalone || comesFromYT) {
-  document.getElementById('launchScreen').style.display = 'none';
-  document.getElementById('appRoot').style.display = 'block';
-} else {
-  document.getElementById('launchScreen').style.display = 'flex';
-  document.getElementById('appRoot').style.display = 'none';
-}
-</script>
-</body>
-</html>
+document.querySelector('.donate-btn').style.transition = 
