@@ -127,7 +127,8 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 .pl-overlay { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:space-between; opacity:1; transition:opacity .4s; pointer-events:none; }
 .pl-overlay.hidden { opacity:0; }
 .pl-top { display:flex; align-items:center; justify-content:space-between; padding:16px 22px; background:linear-gradient(to bottom,rgba(0,0,0,.9),transparent); pointer-events:all; }
-.pl-logo { font-family:'Bebas Neue'; font-size:18px; letter-spacing:3px; color:var(--red); }
+.pl-logo { font-family:'Bebas Neue'; font-size:18px; letter-spacing:3px; color:var(--red); cursor:pointer; }
+.pl-logo:hover { opacity:.8; }
 .pl-logo span { color:#fff; }
 .pl-ch-name { font-size:11px; font-weight:600; color:var(--text2); letter-spacing:2px; text-transform:uppercase; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .pl-top-btns { display:flex; gap:6px; }
@@ -550,7 +551,7 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
     </div>
     <div class="pl-overlay" id="plOverlay">
       <div class="pl-top">
-        <div class="pl-logo">TV<span>TESLA</span></div>
+        <div class="pl-logo" onclick="closePlayer();goTab('tv')">TV<span>TESLA</span></div>
         <div class="pl-ch-name" id="plChName"></div>
         <div class="pl-top-btns">
           <div class="pl-btn" id="castBtn" onclick="toggleCast()" title="Enviar al TV">
