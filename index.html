@@ -295,7 +295,7 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 .lista-progress-txt { font-size:12px; color:var(--text3); }
 
 /* DONATE */
-.donate-btn { position:fixed; bottom:22px; right:22px; background:#FFDD00; color:#000; border:none; border-radius:50px; padding:11px 20px; font-family:'Inter'; font-size:12px; font-weight:700; cursor:pointer; z-index:150; display:flex; align-items:center; gap:7px; box-shadow:0 4px 18px rgba(255,221,0,.4); transition:all .25s; text-decoration:none; letter-spacing:.3px; }
+.donate-btn { position:fixed; bottom:22px; right:22px; background:#FFDD00; color:#000; border:none; border-radius:50px; padding:11px 20px; font-family:'Inter'; font-size:12px; font-weight:700; cursor:pointer; z-index:150; display:flex; align-items:center; gap:7px; box-shadow:0 4px 18px rgba(255,221,0,.4); transition:opacity .4s ease, transform .25s, background .25s; text-decoration:none; letter-spacing:.3px; }
 .donate-btn:hover { background:#e6c700; transform:translateY(-2px); }
 .tesla-ref-btn {
   position:fixed; bottom:22px; right:190px;
@@ -1221,36 +1221,41 @@ pelIniciarGeneros();
 let uiHideTimer = null;
 const UI_DELAY = 5000;
 
+function getUIElements() {
+  return {
+    nav: document.querySelector('.main-nav'),
+    donate: document.querySelector('.donate-btn'),
+    teslaRef: document.querySelector('.tesla-ref-btn')
+  };
+}
+
 function showUI() {
-  const nav = document.querySelector('.main-nav');
-  const donate = document.querySelector('.donate-btn');
-  const teslaRef = document.querySelector('.tesla-ref-btn');
-  nav.style.transform = 'translateY(0)'; nav.style.opacity = '1';
-  donate.style.opacity = '1'; donate.style.pointerEvents = 'all';
-  teslaRef.style.opacity = '1'; teslaRef.style.pointerEvents = 'all';
+  const {nav, donate, teslaRef} = getUIElements();
+  if(nav) { nav.style.transform='translateY(0)'; nav.style.opacity='1'; }
+  if(donate) { donate.style.opacity='1'; donate.style.pointerEvents='all'; }
+  if(teslaRef) { teslaRef.style.opacity='1'; teslaRef.style.pointerEvents='all'; }
   clearTimeout(uiHideTimer);
   uiHideTimer = setTimeout(hideUI, UI_DELAY);
 }
+
 function hideUI() {
-  const nav = document.querySelector('.main-nav');
-  const donate = document.querySelector('.donate-btn');
-  const teslaRef = document.querySelector('.tesla-ref-btn');
-  nav.style.transform = 'translateY(-100%)'; nav.style.opacity = '0';
-  donate.style.opacity = '0'; donate.style.pointerEvents = 'none';
-  teslaRef.style.opacity = '0'; teslaRef.style.pointerEvents = 'none';
+  const {nav, donate, teslaRef} = getUIElements();
+  if(nav) { nav.style.transform='translateY(-100%)'; nav.style.opacity='0'; }
+  if(donate) { donate.style.opacity='0'; donate.style.pointerEvents='none'; }
+  if(teslaRef) { teslaRef.style.opacity='0'; teslaRef.style.pointerEvents='none'; }
 }
 
-// Transición suave en nav y botones
-document.querySelector('.main-nav').style.transition = 'transform .4s ease, opacity .4s ease';
-document.querySelector('.donate-btn').style.transition = 'opacity .4s ease';
-document.querySelector('.tesla-ref-btn').style.transition = 'opacity .4s ease';
+// Aplicar transiciones
+window.addEventListener('load', ()=>{
+  const {nav, donate, teslaRef} = getUIElements();
+  if(nav) nav.style.transition='transform .4s ease, opacity .4s ease';
+  if(donate) donate.style.transition='opacity .4s ease';
+  if(teslaRef) teslaRef.style.transition='opacity .4s ease';
+  uiHideTimer = setTimeout(hideUI, UI_DELAY);
+});
 
-// Mostrar al tocar o mover el ratón
 document.addEventListener('touchstart', showUI, {passive:true});
 document.addEventListener('mousemove', showUI, {passive:true});
-
-// Arrancar el timer inicial
-uiHideTimer = setTimeout(hideUI, UI_DELAY);
 </script>
 </div><!-- /appRoot -->
 
