@@ -342,6 +342,10 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 .donate-custom { width:100%; background:#111; border:1px solid #333; border-radius:7px; padding:9px 12px; color:#fff; font-family:'Inter'; font-size:14px; text-align:center; outline:none; margin-bottom:16px; }
 .donate-go { width:100%; background:#FFDD00; color:#fff; border:none; border-radius:7px; padding:13px; font-family:'Inter'; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px; }
 .donate-go:hover { background:#e6c700; }
+.pin-dot { width:14px;height:14px;border-radius:50%;background:#333;border:2px solid #555;transition:background .15s; }
+.pin-dot.filled { background:var(--red);border-color:var(--red); }
+.pin-key { background:#222;border:1px solid #333;border-radius:10px;padding:16px;color:#fff;font-size:20px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s; }
+.pin-key:hover,.pin-key:active { background:var(--red);border-color:var(--red); }
 
 /* RESPONSIVE */
 @media(max-width:768px){
@@ -632,6 +636,34 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
     <a class="tesla-ref-btn-go" href="https://ts.la/janner501984" target="_blank">
       ⚡ Ir a Tesla con mi referido
     </a>
+  </div>
+</div>
+
+<!-- PIN MODAL -->
+<div class="donate-modal-bg" id="pinModal">
+  <div class="donate-modal" style="max-width:300px;">
+    <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:2px;color:#fff;margin-bottom:6px;">🔒 PIN <span style="color:var(--red);">Privado</span></div>
+    <div style="font-size:12px;color:#666;margin-bottom:18px;">Introduce tu código de acceso</div>
+    <div id="pinDots" style="display:flex;justify-content:center;gap:12px;margin-bottom:20px;">
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key" onclick="pinKey('borrar')" style="font-size:18px;">⌫</button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key" onclick="pinKey('cerrar')" style="color:#555;">✕</button>
+    </div>
+    <div id="pinError" style="font-size:12px;color:var(--red);margin-top:14px;min-height:18px;"></div>
   </div>
 </div>
 
@@ -1041,14 +1073,45 @@ async function pegarPortapapeles(){
     }
   }
 }
-async function cargarListaJanner(){
-  const pin = prompt('🔒 Introduce tu PIN para cargar la lista:');
-  if(pin === null) return;
-  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin));
-  const hex = Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  if(hex !== 'eb63a79fffef7c2c497b7923622d9b58acc5634cbe23e97b0953a1e1cada9b69') {
-    showToast('❌ PIN incorrecto'); return;
+// ═══════════════════════════════════════════
+// PIN KEYPAD
+// ═══════════════════════════════════════════
+let pinValor = '';
+const PIN_HASH = 'eb63a79fffef7c2c497b7923622d9b58acc5634cbe23e97b0953a1e1cada9b69';
+
+function cargarListaJanner(){
+  pinValor = '';
+  actualizarPinDots();
+  document.getElementById('pinError').textContent = '';
+  document.getElementById('pinModal').classList.add('open');
+}
+
+function actualizarPinDots(){
+  document.querySelectorAll('.pin-dot').forEach((d,i)=>{
+    d.classList.toggle('filled', i < pinValor.length);
+  });
+}
+
+async function pinKey(k){
+  if(k === 'cerrar'){ document.getElementById('pinModal').classList.remove('open'); return; }
+  if(k === 'borrar'){ pinValor = pinValor.slice(0,-1); actualizarPinDots(); return; }
+  if(pinValor.length >= 6) return;
+  pinValor += k;
+  actualizarPinDots();
+  if(pinValor.length === 6){
+    const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pinValor));
+    const hex = Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    if(hex === PIN_HASH){
+      document.getElementById('pinModal').classList.remove('open');
+      _cargarCanalesJanner();
+    } else {
+      document.getElementById('pinError').textContent = '❌ PIN incorrecto';
+      setTimeout(()=>{ pinValor=''; actualizarPinDots(); document.getElementById('pinError').textContent=''; }, 1000);
+    }
   }
+}
+
+function _cargarCanalesJanner(){
   const m3u = `#EXTM3U
 #EXTINF:-1 group-title="Deportes",DCTV
 https://bufaloweb.com/httpsCON/bufalo9/index.m3u8
