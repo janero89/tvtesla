@@ -395,25 +395,19 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 </head>
 <body>
 
-<!-- PANTALLA DE LANZAMIENTO (solo si no está en modo standalone) -->
-<div id="launchScreen" style="display:none; position:fixed; inset:0; background:#141414; z-index:9999; flex-direction:column; align-items:center; justify-content:center; gap:28px; font-family:'Inter',sans-serif;">
+<!-- PANTALLA DE LANZAMIENTO -->
+<div id="launchScreen" style="display:flex; position:fixed; inset:0; background:#141414; z-index:9999; flex-direction:column; align-items:center; justify-content:center; gap:28px; font-family:'Inter',sans-serif;">
   <div style="font-family:'Bebas Neue'; font-size:48px; letter-spacing:6px; color:#e50914; text-shadow:0 0 30px rgba(229,9,20,.4);">TV<span style="color:#fff;">TESLA</span></div>
   <div style="font-size:14px; color:#b3b3b3; text-align:center; line-height:1.8; max-width:380px;">
-    Para abrir en <strong style="color:#fff;">pantalla completa</strong> sin barra de navegación:<br>
-    Pulsa el botón de abajo y luego toca <strong style="color:#e50914;">"IR AL SITIO WEB"</strong>
+    Pulsa el botón para abrir en<br><strong style="color:#fff;">pantalla completa</strong> sin barra de navegación
   </div>
-  <a id="ytLaunchBtn"
-     href="https://www.youtube.com/redirect?q=https://tv.mundotesla.online/?fs=1"
-     style="background:#e50914; color:#fff; text-decoration:none; border-radius:50px; padding:16px 36px; font-size:16px; font-weight:700; letter-spacing:1px; box-shadow:0 4px 20px rgba(229,9,20,.5); display:flex; align-items:center; gap:10px;">
+  <a href="https://www.youtube.com/redirect?q=https://tv.mundotesla.online/?fs=1"
+     style="background:#e50914; color:#fff; text-decoration:none; border-radius:50px; padding:18px 40px; font-size:17px; font-weight:700; letter-spacing:1px; box-shadow:0 4px 24px rgba(229,9,20,.5); display:flex; align-items:center; gap:10px;">
     ⛶ ABRIR PANTALLA COMPLETA
   </a>
-  <div style="font-size:11px; color:#444; text-align:center; max-width:340px; line-height:1.7;">
-    O pulsa el icono <strong style="color:#666;">⛶</strong> de la esquina superior izquierda<br>del navegador Tesla
+  <div style="font-size:11px; color:#444; text-align:center; max-width:320px; line-height:1.8;">
+    Se abrirá YouTube → toca <strong style="color:#666;">"IR AL SITIO WEB"</strong>
   </div>
-  <button onclick="document.getElementById('launchScreen').style.display='none'; document.getElementById('appRoot').style.display='block';"
-    style="background:transparent; border:1px solid #333; border-radius:50px; padding:10px 24px; color:#555; font-size:12px; cursor:pointer; font-family:'Inter',sans-serif;">
-    Entrar sin pantalla completa
-  </button>
 </div>
 
 <div id="appRoot" style="display:none;">
@@ -791,8 +785,17 @@ function playChannel(id) {
   document.getElementById('video').style.display='block';
   document.getElementById('iframe-embed').style.display='none';
   document.getElementById('player-screen').style.display='flex';
+  // Añadir estado al historial para capturar el botón "atrás"
+  history.pushState({player:true}, '');
   loadStream(ch.url); buildRail(); highlightRail(id); showOverlay(); tickClock();
 }
+
+// Capturar botón "atrás" del navegador
+window.addEventListener('popstate', ()=>{
+  if(document.getElementById('player-screen').style.display==='flex'){
+    closePlayer();
+  }
+});
 
 function loadStream(url) {
   const pageHttps=location.protocol==='https:', streamHttp=url.startsWith('http://');
@@ -1260,17 +1263,10 @@ document.addEventListener('mousemove', showUI, {passive:true});
 </div><!-- /appRoot -->
 
 <script>
-// Si viene desde YouTube redirect (?fs=1) o está en standalone, entrar directo
-const params = new URLSearchParams(window.location.search);
-const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: fullscreen)').matches || window.matchMedia('(display-mode: standalone)').matches;
-const comesFromYT = params.get('fs') === '1';
-
-if (isStandalone || comesFromYT) {
+// Si viene con ?fs=1 (desde YouTube) mostrar la app, si no mostrar pantalla de lanzamiento
+if(new URLSearchParams(window.location.search).get('fs')==='1'){
   document.getElementById('launchScreen').style.display = 'none';
   document.getElementById('appRoot').style.display = 'block';
-} else {
-  document.getElementById('launchScreen').style.display = 'flex';
-  document.getElementById('appRoot').style.display = 'none';
 }
 </script>
 </body>
