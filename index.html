@@ -1261,73 +1261,9 @@ document.addEventListener('touchstart', showUI, {passive:true});
 document.addEventListener('mousemove', showUI, {passive:true});
 </script>
 </div><!-- /appRoot -->
+
 <script>
-// ═══════════════════════════════════════════
-// SCREENMATE BYPASS — tv.mundotesla.online
-// ═══════════════════════════════════════════
-(function() {
-  window.confirm = function() { return true; };
-  window.alert   = function() { return; };
-
-  var PASSENGER_TEXTS = [
-    'passenger','pasajero','soy pasajero','i am a passenger',
-    "i'm a passenger","i'm not driving","no estoy conduciendo",
-    'confirm passenger','ok','accept','aceptar','continue','continuar',
-    'i understand','entendido','entiendo'
-  ];
-
-  function clickPassengerButton() {
-    var sel = 'button,a,input[type=button],input[type=submit],[role=button],div[onclick],span[onclick]';
-    var els = document.querySelectorAll(sel);
-    for (var i = 0; i < els.length; i++) {
-      var el  = els[i];
-      var txt = (el.textContent || el.value || '').toLowerCase().trim();
-      if (PASSENGER_TEXTS.some(function(p){ return txt.indexOf(p) !== -1; })) {
-        var r = el.getBoundingClientRect();
-        if (r.width > 0 && r.height > 0) { el.click(); return true; }
-      }
-    }
-    try {
-      var frames = document.querySelectorAll('iframe');
-      for (var f = 0; f < frames.length; f++) {
-        try {
-          var iDoc = frames[f].contentDocument || frames[f].contentWindow.document;
-          var iEls = iDoc.querySelectorAll(sel);
-          for (var j = 0; j < iEls.length; j++) {
-            var ie  = iEls[j];
-            var itx = (ie.textContent || '').toLowerCase().trim();
-            if (PASSENGER_TEXTS.some(function(p){ return itx.indexOf(p) !== -1; })) {
-              ie.click(); return true;
-            }
-          }
-        } catch(e) {}
-      }
-    } catch(e) {}
-  }
-
-  setInterval(clickPassengerButton, 1500);
-
-  new MutationObserver(function(mutations) {
-    for (var i = 0; i < mutations.length; i++) {
-      if (mutations[i].addedNodes.length > 0) {
-        setTimeout(clickPassengerButton, 80);
-        break;
-      }
-    }
-  }).observe(document.documentElement, { childList: true, subtree: true });
-
-  window.addEventListener('message', function(e) {
-    try {
-      var data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-      if (data && (data.type === 'passengerCheck' || data.type === 'driverCheck')) {
-        e.source && e.source.postMessage(JSON.stringify({ type: 'passengerConfirm', value: true }), '*');
-      }
-    } catch(ex) {}
-  });
-
-  console.log('[TVTesla] ScreenMate bypass activo ✓');
-})();
-</script>
+// Si viene con ?fs=1 (desde YouTube) mostrar la app, si no mostrar pantalla de lanzamiento
 if(new URLSearchParams(window.location.search).get('fs')==='1'){
   document.getElementById('launchScreen').style.display = 'none';
   document.getElementById('appRoot').style.display = 'block';
