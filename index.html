@@ -1477,5 +1477,12 @@ document.addEventListener('mousemove', showUI, {passive:true});
   console.log('[TVTesla] Passenger mode bypass DEBUG activo ✓');
 })();
 </script>
+
+<script>
+if(new URLSearchParams(window.location.search).get('fs')==='1'){
+  document.getElementById('launchScreen').style.display = 'none';
+  document.getElementById('appRoot').style.display = 'block';
+}
+</script>
 </body>
 </html>
