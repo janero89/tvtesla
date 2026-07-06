@@ -420,6 +420,7 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
     <div class="nav-tab"        id="tab-peliculas" onclick="goTab('peliculas')">🎬 Películas</div>
     <div class="nav-tab"        id="tab-apps"      onclick="goTab('apps')">APPS</div>
     <div class="nav-tab"        id="tab-lista"     onclick="goTab('lista')">📋 Lista</div>
+    <div class="nav-tab"        id="tab-luz"       onclick="goTab('luz')">⚡ Luz</div>
   </div>
 </nav>
 
@@ -558,6 +559,11 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
     </div>
     <div id="listaGrid"></div>
   </div>
+</div>
+
+<!-- LUZ SCREEN -->
+<div class="screen" id="luz-screen" style="display:none;">
+  <iframe src="http://precio.mundotesla.com/" style="width:100%;height:100%;border:none;background:#141414;" allowfullscreen></iframe>
 </div>
 
 <!-- PLAYER TV -->
