@@ -753,7 +753,12 @@ function goTab(tab) {
   if (tab==='tv')        { channels=loadChannels(); renderChannels(); }
   if (tab==='lista')     renderListaGrid();
   if (tab==='peliculas') { if(!pelCargado) pelCargar(1); }
-  if (tab==='luz')       { const f=document.getElementById('luzFrame'); if(f && !f.src.includes('precio')) f.src='https://precio.mundotesla.com/'; }
+  if (tab==='luz')       {
+    const f=document.getElementById('luzFrame'); if(f && !f.src.includes('precio')) f.src='https://precio.mundotesla.com/';
+    hideUI(); clearTimeout(uiHideTimer);
+  } else {
+    showUI();
+  }
 }
 
 // ═══════════════════════════════════════════
