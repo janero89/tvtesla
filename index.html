@@ -421,6 +421,8 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
     <div class="nav-tab"        id="tab-apps"      onclick="goTab('apps')">APPS</div>
     <div class="nav-tab"        id="tab-lista"     onclick="goTab('lista')">📋 Lista</div>
     <div class="nav-tab"        id="tab-luz"       onclick="goTab('luz')">⚡ Luz</div>
+    <div class="nav-tab"        id="tab-referido"  onclick="document.getElementById('teslaRefModal').classList.add('open')">🚗 Referido</div>
+    <div class="nav-tab"        id="tab-cafe"      onclick="window.open('https://buymeacoffee.com/janero89','_blank')">☕ Café</div>
   </div>
 </nav>
 
@@ -614,11 +616,8 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
   </div>
 </div>
 
-<!-- TESLA REFERRAL -->
-<a class="tesla-ref-btn" onclick="document.getElementById('teslaRefModal').classList.add('open');return false;" href="#">
-  🚗 Referido Tesla
-</a>
 
+<!-- TESLA REFERRAL MODAL -->
 <div class="tesla-ref-modal-bg" id="teslaRefModal" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="tesla-ref-modal">
     <button class="tesla-ref-close" onclick="document.getElementById('teslaRefModal').classList.remove('open')">✕</button>
@@ -666,10 +665,7 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
   </div>
 </div>
 
-<!-- DONATE -->
-<a class="donate-btn" href="https://buymeacoffee.com/janero89" target="_blank">
-  ☕ Invítame a un café
-</a>
+<!-- DONATE movido a pestaña nav -->
 
 
 
