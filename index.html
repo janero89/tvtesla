@@ -295,22 +295,6 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 .lista-progress-txt { font-size:12px; color:var(--text3); }
 
 /* DONATE */
-.donate-btn { position:fixed; bottom:90px; right:200px; background:#FFDD00; color:#000; border:none; border-radius:50px; padding:11px 20px; font-family:'Inter'; font-size:12px; font-weight:700; cursor:pointer; z-index:150; display:flex; align-items:center; gap:7px; box-shadow:0 4px 18px rgba(255,221,0,.4); transition:opacity .4s ease, transform .25s, background .25s; text-decoration:none; letter-spacing:.3px; }
-.donate-btn:hover { background:#e6c700; transform:translateY(-2px); }
-.tesla-ref-btn {
-  position:fixed; bottom:90px; right:400px;
-  background:linear-gradient(135deg,#cc0000,#e50914);
-  color:#fff; border:none; border-radius:50px;
-  padding:11px 20px; font-family:'Inter'; font-size:12px; font-weight:700;
-  cursor:pointer; z-index:150; display:flex; align-items:center; gap:7px;
-  box-shadow:0 4px 18px rgba(229,9,20,.45); transition:all .25s;
-  text-decoration:none; letter-spacing:.3px; white-space:nowrap;
-}
-.tesla-ref-btn:hover { transform:translateY(-2px); box-shadow:0 6px 22px rgba(229,9,20,.6); }
-.tesla-ref-icon { font-size:13px; }
-.tesla-ref-text { display:flex; flex-direction:column; line-height:1.2; }
-.tesla-ref-title { font-size:12px; font-weight:700; }
-.tesla-ref-sub { display:none; }
 
 .tesla-ref-modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:600; align-items:center; justify-content:center; backdrop-filter:blur(8px); }
 .tesla-ref-modal-bg.open { display:flex; }
@@ -361,9 +345,6 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
   .ch-grid-wrap{padding:12px 14px 70px;}
   .apps-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:9px;}
   #apps-screen{padding:16px 14px 70px;}
-  .donate-btn{bottom:80px;right:14px;padding:9px 14px;font-size:11px;}
-  .tesla-ref-btn{bottom:80px;right:190px;padding:9px 14px;font-size:11px;}
-  .tesla-ref-sub{display:none;}
 
 }
 @media(max-width:480px){
@@ -421,6 +402,8 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
     <div class="nav-tab"        id="tab-apps"      onclick="goTab('apps')">APPS</div>
     <div class="nav-tab"        id="tab-lista"     onclick="goTab('lista')">📋 Lista</div>
     <div class="nav-tab"        id="tab-luz"       onclick="goTab('luz')">⚡ Luz</div>
+    <div class="nav-tab"        id="tab-referido"  onclick="document.getElementById('teslaRefModal').classList.add('open')">🚗 Referido</div>
+    <div class="nav-tab"        id="tab-cafe"      onclick="window.open('https://buymeacoffee.com/janero89','_blank')">☕ Café</div>
     <div class="nav-tab"        id="tab-referido"  onclick="document.getElementById('teslaRefModal').classList.add('open')">🚗 Referido</div>
     <div class="nav-tab"        id="tab-cafe"      onclick="window.open('https://buymeacoffee.com/janero89','_blank')">☕ Café</div>
   </div>
@@ -1229,35 +1212,25 @@ let uiHideTimer = null;
 const UI_DELAY = 5000;
 
 function getUIElements() {
-  return {
-    nav: document.querySelector('.main-nav'),
-    donate: document.querySelector('.donate-btn'),
-    teslaRef: document.querySelector('.tesla-ref-btn')
-  };
+  return { nav: document.querySelector('.main-nav') };
 }
 
 function showUI() {
-  const {nav, donate, teslaRef} = getUIElements();
+  const {nav} = getUIElements();
   if(nav) { nav.style.transform='translateY(0)'; nav.style.opacity='1'; }
-  if(donate) { donate.style.opacity='1'; donate.style.pointerEvents='all'; }
-  if(teslaRef) { teslaRef.style.opacity='1'; teslaRef.style.pointerEvents='all'; }
   clearTimeout(uiHideTimer);
   uiHideTimer = setTimeout(hideUI, UI_DELAY);
 }
 
 function hideUI() {
-  const {nav, donate, teslaRef} = getUIElements();
+  const {nav} = getUIElements();
   if(nav) { nav.style.transform='translateY(-100%)'; nav.style.opacity='0'; }
-  if(donate) { donate.style.opacity='0'; donate.style.pointerEvents='none'; }
-  if(teslaRef) { teslaRef.style.opacity='0'; teslaRef.style.pointerEvents='none'; }
 }
 
 // Aplicar transiciones
 window.addEventListener('load', ()=>{
-  const {nav, donate, teslaRef} = getUIElements();
+  const {nav} = getUIElements();
   if(nav) nav.style.transition='transform .4s ease, opacity .4s ease';
-  if(donate) donate.style.transition='opacity .4s ease';
-  if(teslaRef) teslaRef.style.transition='opacity .4s ease';
   // Ocultar inmediatamente al cargar, siempre
   hideUI();
   // Mostrar brevemente al inicio y luego ocultar
