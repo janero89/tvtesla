@@ -562,8 +562,15 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 </div>
 
 <!-- LUZ SCREEN -->
-<div class="screen" id="luz-screen" style="display:none;">
-  <iframe src="http://precio.mundotesla.com/" style="width:100%;height:100%;border:none;background:#141414;" allowfullscreen></iframe>
+<div class="screen" id="luz-screen" style="display:none; align-items:center; justify-content:center; flex-direction:column; gap:20px; background:#141414;">
+  <div style="font-family:'Bebas Neue';font-size:36px;letter-spacing:4px;color:#e50914;">⚡ Precio de la <span style="color:#fff;">Luz</span></div>
+  <div style="font-size:13px;color:#666;text-align:center;max-width:340px;line-height:1.7;">
+    Esta página usa HTTP y no puede mostrarse dentro de la app HTTPS.<br>Ábrela directamente en el navegador.
+  </div>
+  <a href="http://precio.mundotesla.com/" target="_blank"
+     style="background:var(--red);color:#fff;text-decoration:none;border-radius:50px;padding:14px 32px;font-size:15px;font-weight:700;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:8px;">
+    ⚡ Abrir Precio de la Luz
+  </a>
 </div>
 
 <!-- PLAYER TV -->
