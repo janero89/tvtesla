@@ -406,6 +406,7 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
     <div class="nav-tab"        id="tab-checker"   onclick="goTab('checker')">🚚 Entrega</div>
     <div class="nav-tab"        id="tab-vincoder"  onclick="goTab('vincoder')">🔍 VIN</div>
     <div class="nav-tab"        id="tab-velocidad" onclick="goTab('velocidad')">⏱ 0-100</div>
+    <div class="nav-tab"        id="tab-juegos"    onclick="goTab('juegos')">🎮 Juegos</div>
     <div class="nav-tab"        id="tab-referido"  onclick="document.getElementById('teslaRefModal').classList.add('open')">🚗 Referido</div>
     <div class="nav-tab"        id="tab-cafe"      onclick="window.open('https://buymeacoffee.com/janero89','_blank')">☕ Café</div>
   </div>
@@ -563,7 +564,20 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
   <iframe id="vincoderFrame" style="flex:1;width:100%;border:none;background:#141414;"></iframe>
 </div>
 
-<!-- VELOCIDAD SCREEN -->
+<!-- JUEGOS SCREEN -->
+<div class="screen" id="juegos-screen" style="display:none; flex-direction:column; background:#0a0a0a;">
+  <div id="juegosMenu" style="overflow-y:auto;padding:20px 24px 60px;">
+    <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:4px;color:#e50914;margin-bottom:16px;">🎮 Juegos</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;" id="juegosGrid"></div>
+  </div>
+  <div id="juegosPlayer" style="display:none;flex:1;flex-direction:column;">
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 16px;background:#111;border-bottom:1px solid #222;flex-shrink:0;">
+      <button onclick="juegosVolver()" style="background:#222;border:1px solid #333;border-radius:8px;padding:7px 16px;color:#fff;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;">← Volver</button>
+      <span id="juegosNombre" style="font-family:'Bebas Neue';font-size:16px;letter-spacing:2px;color:#e50914;"></span>
+    </div>
+    <iframe id="juegosFrame" style="flex:1;width:100%;border:none;background:#000;" allowfullscreen allow="autoplay;fullscreen"></iframe>
+  </div>
+</div>
 <div class="screen" id="velocidad-screen" style="display:none; flex-direction:column; align-items:center; justify-content:center; background:#0a0a0a; gap:0;">
 
   <div style="font-family:'Bebas Neue';font-size:18px;letter-spacing:4px;color:#e50914;margin-bottom:8px;">⏱ 0 — 100 km/h</div>
@@ -788,6 +802,9 @@ function goTab(tab) {
     showUIpermanent();
   } else if (tab==='velocidad') {
     velReset();
+    showUIpermanent();
+  } else if (tab==='juegos') {
+    juegosVolver();
     showUIpermanent();
   } else if (tab==='tv' || tab==='peliculas') {
     showUI();
@@ -1220,6 +1237,55 @@ https://bufaloweb.com/httpsCON/bufalo18/index.m3u8`;
 
 function cargarListaTexto(){const text=document.getElementById('listaTextInput').value.trim();if(!text){showToast('Pega el contenido M3U primero');return;}const parsed=parseM3U(text);if(!parsed.length){showToast('No se encontraron canales');return;}const existing=loadLista();const merged=[...existing];let added=0;parsed.forEach(ch=>{if(!merged.find(x=>x.url===ch.url)){merged.push(ch);added++;}});saveLista(merged);syncChannels();renderListaGrid();document.getElementById('listaTextInput').value='';showToast('✅ '+added+' canales importados');}
 function exportarLista(){const list=loadLista();if(!list.length){showToast('Sin canales que exportar');return;}let m3u='#EXTM3U\n';list.forEach(ch=>{m3u+='#EXTINF:-1,'+ch.name+'\n'+ch.url+'\n';});const blob=new Blob([m3u],{type:'audio/x-mpegurl'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mi_lista_tvcar.m3u';a.click();showToast('📥 Lista exportada');}
+
+// ═══════════════════════════════════════════
+// JUEGOS
+// ═══════════════════════════════════════════
+const JUEGOS = [
+  { nombre:'Snake',         emoji:'🐍', url:'https://playsnake.org/' },
+  { nombre:'Tetris',        emoji:'🟦', url:'https://tetris.com/play-tetris' },
+  { nombre:'Ajedrez',       emoji:'♟️', url:'https://www.chess.com/play/computer' },
+  { nombre:'Pac-Man',       emoji:'👾', url:'https://freepacman.org/' },
+  { nombre:'2048',          emoji:'🔢', url:'https://play2048.co/' },
+  { nombre:'Sudoku',        emoji:'🧩', url:'https://sudoku.com/' },
+  { nombre:'Wordle',        emoji:'🟩', url:'https://www.nytimes.com/games/wordle/index.html' },
+  { nombre:'Solitario',     emoji:'🃏', url:'https://www.solitr.com/' },
+  { nombre:'Buscaminas',    emoji:'💣', url:'https://minesweeper.online/' },
+  { nombre:'Mahjong',       emoji:'🀄', url:'https://www.mahjong.org/' },
+  { nombre:'Bubble Shooter',emoji:'🫧', url:'https://www.bubbleshooter.net/' },
+  { nombre:'Flappy Bird',   emoji:'🐦', url:'https://flappybird.io/' },
+  { nombre:'Dino',          emoji:'🦕', url:'https://chromedino.com/' },
+  { nombre:'Stack',         emoji:'🏗️', url:'https://www.crazygames.com/game/stack' },
+  { nombre:'Basketball',    emoji:'🏀', url:'https://www.crazygames.com/game/basketball-stars' },
+];
+
+function juegosInit() {
+  const grid = document.getElementById('juegosGrid');
+  if (!grid || grid.children.length > 0) return;
+  JUEGOS.forEach(j => {
+    const card = document.createElement('div');
+    card.style.cssText = 'background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:20px 10px;cursor:pointer;text-align:center;transition:all .2s;';
+    card.innerHTML = `<div style="font-size:36px;margin-bottom:8px;">${j.emoji}</div><div style="font-size:12px;font-weight:700;color:#fff;font-family:Inter,sans-serif;">${j.nombre}</div>`;
+    card.onclick = () => juegosAbrir(j);
+    card.onmouseover = () => { card.style.borderColor='#e50914'; card.style.transform='scale(1.05)'; };
+    card.onmouseout  = () => { card.style.borderColor='#2a2a2a'; card.style.transform='scale(1)'; };
+    grid.appendChild(card);
+  });
+}
+
+function juegosAbrir(j) {
+  document.getElementById('juegosMenu').style.display = 'none';
+  document.getElementById('juegosPlayer').style.display = 'flex';
+  document.getElementById('juegosNombre').textContent = j.emoji + ' ' + j.nombre;
+  document.getElementById('juegosFrame').src = j.url;
+}
+
+function juegosVolver() {
+  document.getElementById('juegosPlayer').style.display = 'none';
+  document.getElementById('juegosMenu').style.display = 'block';
+  document.getElementById('juegosFrame').src = '';
+  juegosInit();
+}
 
 // ═══════════════════════════════════════════
 // VELOCÍMETRO 0-100
