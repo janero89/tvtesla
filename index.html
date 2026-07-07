@@ -405,6 +405,7 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
     <div class="nav-tab"        id="tab-luz"       onclick="goTab('luz')">⚡ Luz</div>
     <div class="nav-tab"        id="tab-checker"   onclick="goTab('checker')">🚚 Entrega</div>
     <div class="nav-tab"        id="tab-vincoder"  onclick="goTab('vincoder')">🔍 VIN</div>
+    <div class="nav-tab"        id="tab-velocidad" onclick="goTab('velocidad')">⏱ 0-100</div>
     <div class="nav-tab"        id="tab-referido"  onclick="document.getElementById('teslaRefModal').classList.add('open')">🚗 Referido</div>
     <div class="nav-tab"        id="tab-cafe"      onclick="window.open('https://buymeacoffee.com/janero89','_blank')">☕ Café</div>
   </div>
@@ -560,6 +561,40 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 <!-- VINCODER SCREEN -->
 <div class="screen" id="vincoder-screen" style="display:none; flex-direction:column; background:#141414;">
   <iframe id="vincoderFrame" style="flex:1;width:100%;border:none;background:#141414;"></iframe>
+</div>
+
+<!-- VELOCIDAD SCREEN -->
+<div class="screen" id="velocidad-screen" style="display:none; flex-direction:column; align-items:center; justify-content:center; background:#0a0a0a; gap:0;">
+
+  <div style="font-family:'Bebas Neue';font-size:18px;letter-spacing:4px;color:#e50914;margin-bottom:8px;">⏱ 0 — 100 km/h</div>
+
+  <!-- Velocímetro -->
+  <div style="position:relative;width:260px;height:260px;margin-bottom:16px;">
+    <canvas id="velCanvas" width="260" height="260"></canvas>
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;">
+      <div id="velKmh" style="font-family:'Bebas Neue';font-size:64px;color:#fff;line-height:1;">0</div>
+      <div style="font-size:12px;color:#666;letter-spacing:3px;">km/h</div>
+    </div>
+  </div>
+
+  <!-- Cronómetro -->
+  <div id="velTimer" style="font-family:'Bebas Neue';font-size:72px;color:#e50914;letter-spacing:2px;line-height:1;">0.00</div>
+  <div style="font-size:11px;color:#444;letter-spacing:3px;margin-bottom:24px;">SEGUNDOS</div>
+
+  <!-- Estado -->
+  <div id="velStatus" style="font-size:13px;color:#555;margin-bottom:24px;letter-spacing:1px;">Toca INICIAR para comenzar</div>
+
+  <!-- Botones -->
+  <div style="display:flex;gap:14px;">
+    <button id="velBtn" onclick="velIniciar()" style="background:#e50914;border:none;border-radius:50px;padding:16px 40px;color:#fff;font-family:'Bebas Neue';font-size:22px;letter-spacing:2px;cursor:pointer;">INICIAR</button>
+    <button onclick="velReset()" style="background:#222;border:1px solid #333;border-radius:50px;padding:16px 30px;color:#888;font-family:'Bebas Neue';font-size:22px;letter-spacing:2px;cursor:pointer;">RESET</button>
+  </div>
+
+  <!-- Mejor tiempo -->
+  <div style="margin-top:20px;text-align:center;">
+    <div style="font-size:10px;color:#333;letter-spacing:3px;margin-bottom:4px;">MEJOR TIEMPO</div>
+    <div id="velBest" style="font-family:'Bebas Neue';font-size:28px;color:#555;">--</div>
+  </div>
 </div>
 
 <!-- PLAYER TV -->
@@ -750,6 +785,9 @@ function goTab(tab) {
     showUIpermanent();
   } else if (tab==='vincoder') {
     const f=document.getElementById('vincoderFrame'); if(f && !f.src.includes('vin')) f.src='https://vin.mundotesla.com/';
+    showUIpermanent();
+  } else if (tab==='velocidad') {
+    velReset();
     showUIpermanent();
   } else if (tab==='tv' || tab==='peliculas') {
     showUI();
@@ -1184,8 +1222,109 @@ function cargarListaTexto(){const text=document.getElementById('listaTextInput')
 function exportarLista(){const list=loadLista();if(!list.length){showToast('Sin canales que exportar');return;}let m3u='#EXTM3U\n';list.forEach(ch=>{m3u+='#EXTINF:-1,'+ch.name+'\n'+ch.url+'\n';});const blob=new Blob([m3u],{type:'audio/x-mpegurl'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mi_lista_tvcar.m3u';a.click();showToast('📥 Lista exportada');}
 
 // ═══════════════════════════════════════════
-// KEYBOARD & TOAST
+// VELOCÍMETRO 0-100
 // ═══════════════════════════════════════════
+let velState = 'idle'; // idle | waiting | running | done
+let velStart = 0, velInterval = null, velGeoWatch = null, velBestTime = null;
+
+function velIniciar() {
+  if (velState === 'running') return;
+  velState = 'waiting';
+  document.getElementById('velBtn').textContent = 'ESPERANDO...';
+  document.getElementById('velBtn').style.background = '#333';
+  document.getElementById('velStatus').textContent = 'Esperando movimiento...';
+  document.getElementById('velStatus').style.color = '#888';
+
+  if (!navigator.geolocation) {
+    document.getElementById('velStatus').textContent = 'GPS no disponible';
+    velState = 'idle';
+    return;
+  }
+
+  velGeoWatch = navigator.geolocation.watchPosition(pos => {
+    const kmh = (pos.coords.speed || 0) * 3.6;
+    velDibujarArco(kmh);
+    document.getElementById('velKmh').textContent = Math.round(kmh);
+
+    if (velState === 'waiting' && kmh > 2) {
+      // Arranca el cronómetro
+      velState = 'running';
+      velStart = Date.now();
+      document.getElementById('velBtn').textContent = 'CORRIENDO...';
+      document.getElementById('velBtn').style.background = '#e5a000';
+      document.getElementById('velStatus').textContent = '¡Acelerando!';
+      document.getElementById('velStatus').style.color = '#e5a000';
+      velInterval = setInterval(() => {
+        const seg = ((Date.now() - velStart) / 1000).toFixed(2);
+        document.getElementById('velTimer').textContent = seg;
+      }, 50);
+    }
+
+    if (velState === 'running' && kmh >= 100) {
+      // Llegó a 100
+      const tiempo = ((Date.now() - velStart) / 1000).toFixed(2);
+      clearInterval(velInterval);
+      navigator.geolocation.clearWatch(velGeoWatch);
+      velState = 'done';
+      document.getElementById('velTimer').textContent = tiempo;
+      document.getElementById('velTimer').style.color = '#4caf50';
+      document.getElementById('velStatus').textContent = '✅ ¡100 km/h alcanzados!';
+      document.getElementById('velStatus').style.color = '#4caf50';
+      document.getElementById('velBtn').textContent = 'INICIAR';
+      document.getElementById('velBtn').style.background = '#e50914';
+      if (!velBestTime || parseFloat(tiempo) < parseFloat(velBestTime)) {
+        velBestTime = tiempo;
+        document.getElementById('velBest').textContent = tiempo + 's';
+        document.getElementById('velBest').style.color = '#e50914';
+      }
+    }
+  }, err => {
+    document.getElementById('velStatus').textContent = 'Error GPS: ' + err.message;
+    velState = 'idle';
+  }, { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 });
+}
+
+function velReset() {
+  clearInterval(velInterval);
+  if (velGeoWatch) navigator.geolocation.clearWatch(velGeoWatch);
+  velState = 'idle'; velStart = 0;
+  document.getElementById('velTimer').textContent = '0.00';
+  document.getElementById('velTimer').style.color = '#e50914';
+  document.getElementById('velKmh').textContent = '0';
+  document.getElementById('velStatus').textContent = 'Toca INICIAR para comenzar';
+  document.getElementById('velStatus').style.color = '#555';
+  document.getElementById('velBtn').textContent = 'INICIAR';
+  document.getElementById('velBtn').style.background = '#e50914';
+  velDibujarArco(0);
+}
+
+function velDibujarArco(kmh) {
+  const canvas = document.getElementById('velCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const cx = 130, cy = 130, r = 115;
+  ctx.clearRect(0, 0, 260, 260);
+  // Fondo arco
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, Math.PI * 0.75, Math.PI * 2.25);
+  ctx.strokeStyle = '#1a1a1a';
+  ctx.lineWidth = 14;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+  // Arco velocidad
+  const pct = Math.min(kmh / 100, 1);
+  const endAngle = Math.PI * 0.75 + pct * Math.PI * 1.5;
+  const color = kmh < 60 ? '#e50914' : kmh < 90 ? '#e5a000' : '#4caf50';
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, Math.PI * 0.75, endAngle);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 14;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+}
+
+// Dibujar arco vacío al cargar
+window.addEventListener('load', () => { setTimeout(()=>velDibujarArco(0), 500); });
 document.addEventListener('keydown',e=>{
   if(document.getElementById('pel-player').style.display==='block'&&e.key==='Escape'){pelCerrar();return;}
   if(document.getElementById('player-screen').style.display==='flex'){
