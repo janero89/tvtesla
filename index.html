@@ -740,19 +740,20 @@ function goTab(tab) {
   document.getElementById('tab-'+tab).classList.add('active');
   const sc = document.getElementById(tab+'-screen');
   sc.style.display='flex';
-  if (tab==='tv')        { channels=loadChannels(); renderChannels(); }
-  if (tab==='lista')     renderListaGrid();
-  if (tab==='peliculas') { if(!pelCargado) pelCargar(1); }
+  if (tab==='tv')        { channels=loadChannels(); renderChannels(); showUI(); }
+  if (tab==='lista')     { renderListaGrid(); showUIpermanent(); }
+  if (tab==='peliculas') { if(!pelCargado) pelCargar(1); showUI(); }
+  if (tab==='apps')      { showUIpermanent(); }
   if (tab==='luz')       {
     const f=document.getElementById('luzFrame'); if(f && !f.src.includes('precio')) f.src='https://precio.mundotesla.com/';
-    hideUI(); clearTimeout(uiHideTimer);
+    showUIpermanent();
   } else if (tab==='checker') {
     const f=document.getElementById('checkerFrame'); if(f && !f.src.includes('checker')) f.src='https://checker.mundotesla.com/';
-    hideUI(); clearTimeout(uiHideTimer);
+    showUIpermanent();
   } else if (tab==='vincoder') {
     const f=document.getElementById('vincoderFrame'); if(f && !f.src.includes('vin')) f.src='https://vin.mundotesla.com/';
-    hideUI(); clearTimeout(uiHideTimer);
-  } else {
+    showUIpermanent();
+  } else if (tab==='tv' || tab==='peliculas') {
     showUI();
   }
 }
@@ -1239,6 +1240,12 @@ function showUI() {
   uiHideTimer = setTimeout(hideUI, UI_DELAY);
 }
 
+function showUIpermanent() {
+  const {nav} = getUIElements();
+  if(nav) { nav.style.transform='translateY(0)'; nav.style.opacity='1'; }
+  clearTimeout(uiHideTimer);
+}
+
 function hideUI() {
   const {nav} = getUIElements();
   if(nav) { nav.style.transform='translateY(-100%)'; nav.style.opacity='0'; }
@@ -1254,8 +1261,8 @@ window.addEventListener('load', ()=>{
   setTimeout(()=>{ showUI(); }, 300);
 });
 
-document.addEventListener('touchstart', showUI, {passive:true});
-document.addEventListener('mousemove', showUI, {passive:true});
+document.addEventListener('touchstart', ()=>{ if(document.getElementById('tv-screen').style.display==='flex'||document.getElementById('peliculas-screen').style.display==='flex') showUI(); }, {passive:true});
+document.addEventListener('mousemove', ()=>{ if(document.getElementById('tv-screen').style.display==='flex'||document.getElementById('peliculas-screen').style.display==='flex') showUI(); }, {passive:true});
 </script>
 </div><!-- /appRoot -->
 
