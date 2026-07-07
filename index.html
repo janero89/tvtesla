@@ -728,14 +728,12 @@ const BUILT_IN_CHANNELS = [{"id": 1, "name": "La 1", "url": "https://rtvelivestr
 function goTab(tab) {
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.screen').forEach(s=>s.style.display='none');
-  // Cerrar player si estaba abierto
+  // Siempre parar stream al cambiar pestaña
+  stopStream();
+  clearInterval(checkInterval);
   const ps = document.getElementById('player-screen');
-  if(ps.style.display==='flex') {
-    clearInterval(checkInterval);
-    stopStream();
-    ps.classList.remove('tesla-fs');
-    if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
-  }
+  ps.classList.remove('tesla-fs');
+  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
   ps.style.display='none';
   document.getElementById('tab-'+tab).classList.add('active');
   const sc = document.getElementById(tab+'-screen');
