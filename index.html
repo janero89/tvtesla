@@ -1479,7 +1479,10 @@ function showUI() {
   const {nav} = getUIElements();
   if(nav) { nav.style.transform='translateY(0)'; nav.style.opacity='1'; }
   clearTimeout(uiHideTimer);
-  uiHideTimer = setTimeout(hideUI, UI_DELAY);
+  // Solo arrancar el timer si el player está activo
+  if(document.getElementById('player-screen').style.display==='flex'){
+    uiHideTimer = setTimeout(hideUI, UI_DELAY);
+  }
 }
 
 function showUIpermanent() {
@@ -1497,10 +1500,7 @@ function hideUI() {
 window.addEventListener('load', ()=>{
   const {nav} = getUIElements();
   if(nav) nav.style.transition='transform .4s ease, opacity .4s ease';
-  // Ocultar inmediatamente al cargar, siempre
-  hideUI();
-  // Mostrar brevemente al inicio y luego ocultar
-  setTimeout(()=>{ showUI(); }, 300);
+  showUIpermanent();
 });
 
 document.addEventListener('touchstart', ()=>{ if(document.getElementById('player-screen').style.display==='flex') showUI(); }, {passive:true});
