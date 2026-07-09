@@ -53,6 +53,7 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
   padding:0 28px; z-index:100;
   backdrop-filter:blur(10px);
   transition:transform .4s ease, opacity .4s ease;
+  overflow:hidden;
 }
 .nav-logo {
   font-family:'Bebas Neue'; font-size:26px; letter-spacing:3px;
@@ -60,7 +61,7 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
   text-shadow:0 0 20px rgba(229,9,20,.25);
 }
 .nav-logo span { color:var(--text); }
-.nav-tabs { display:flex; gap:0; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; }
+.nav-tabs { display:flex; gap:0; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; flex:1; min-width:0; }
 .nav-tabs::-webkit-scrollbar { display:none; }
 .nav-tab {
   padding:0 22px; height:var(--nav-h); display:flex;
@@ -1272,8 +1273,8 @@ async function cargadoresInit() {
 
   cargadoresMap = L.map('cargadoresMap', { zoomControl: true }).setView([40.4, -3.7], 6);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap',
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap © CARTO',
     maxZoom: 18
   }).addTo(cargadoresMap);
 
