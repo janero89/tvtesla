@@ -819,7 +819,7 @@ function goTab(tab) {
     juegosVolver();
     showUIpermanent();
   } else if (tab==='cargadores') {
-    const f=document.getElementById('cargadoresFrame'); if(f && !f.src.includes('abrp')) f.src='https://abetterrouteplanner.com/';
+    const f=document.getElementById('cargadoresFrame'); if(f && !f.src.includes('openchargemap')) f.src='https://map.openchargemap.io/#/map';
     showUIpermanent();
   } else if (tab==='clima') {
     const f=document.getElementById('climaFrame'); if(f && !f.src.includes('windy')) f.src='https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=°C&metricWind=km/h&zoom=6&overlay=wind&product=ecmwf&level=surface&lat=40.4&lon=-3.7&detailLat=40.4&detailLon=-3.7&detail=true&pressure=true&message=true';
