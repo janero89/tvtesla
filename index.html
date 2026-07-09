@@ -876,7 +876,6 @@ function playChannel(id) {
   document.getElementById('video').style.display='block';
   document.getElementById('iframe-embed').style.display='none';
   document.getElementById('player-screen').style.display='flex';
-  // Añadir estado al historial para capturar el botón "atrás"
   history.pushState({player:true}, '');
   hideUI();
   loadStream(ch.url); buildRail(); highlightRail(id); showOverlay(); tickClock();
