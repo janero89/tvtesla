@@ -801,9 +801,9 @@ function goTab(tab) {
   document.getElementById('tab-'+tab).classList.add('active');
   const sc = document.getElementById(tab+'-screen');
   sc.style.display='flex';
-  if (tab==='tv')        { channels=loadChannels(); renderChannels(); showUI(); }
+  if (tab==='tv')        { channels=loadChannels(); renderChannels(); showUIpermanent(); }
   if (tab==='lista')     { renderListaGrid(); showUIpermanent(); }
-  if (tab==='peliculas') { if(!pelCargado) pelCargar(1); showUI(); }
+  if (tab==='peliculas') { if(!pelCargado) pelCargar(1); showUIpermanent(); }
   if (tab==='apps')      { showUIpermanent(); }
   if (tab==='luz')       {
     const f=document.getElementById('luzFrame'); if(f && !f.src.includes('precio')) f.src='https://precio.mundotesla.com/';
@@ -865,6 +865,7 @@ function playChannel(id) {
   document.getElementById('player-screen').style.display='flex';
   // Añadir estado al historial para capturar el botón "atrás"
   history.pushState({player:true}, '');
+  hideUI();
   loadStream(ch.url); buildRail(); highlightRail(id); showOverlay(); tickClock();
 }
 
@@ -908,6 +909,7 @@ function closePlayer(){
   ps.classList.remove('tesla-fs');
   if(document.fullscreenElement) document.exitFullscreen();
   ps.style.display='none';
+  showUIpermanent();
 }
 function showOverlay(){const o=document.getElementById('plOverlay');o.classList.remove('hidden');clearTimeout(overlayTimer);overlayTimer=setTimeout(()=>{ if(!railTouching) o.classList.add('hidden'); },5000);}
 let railTouching = false;
@@ -1540,8 +1542,8 @@ window.addEventListener('load', ()=>{
   setTimeout(()=>{ showUI(); }, 300);
 });
 
-document.addEventListener('touchstart', ()=>{ if(document.getElementById('tv-screen').style.display==='flex'||document.getElementById('peliculas-screen').style.display==='flex') showUI(); }, {passive:true});
-document.addEventListener('mousemove', ()=>{ if(document.getElementById('tv-screen').style.display==='flex'||document.getElementById('peliculas-screen').style.display==='flex') showUI(); }, {passive:true});
+document.addEventListener('touchstart', ()=>{ if(document.getElementById('player-screen').style.display==='flex') showUI(); }, {passive:true});
+document.addEventListener('mousemove', ()=>{ if(document.getElementById('player-screen').style.display==='flex') showUI(); }, {passive:true});
 </script>
 </div><!-- /appRoot -->
 
