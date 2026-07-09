@@ -1479,16 +1479,15 @@ function showUI() {
   const {nav} = getUIElements();
   if(nav) { nav.style.transform='translateY(0)'; nav.style.opacity='1'; }
   clearTimeout(uiHideTimer);
-  // Solo arrancar el timer si el player está activo
   if(document.getElementById('player-screen').style.display==='flex'){
     uiHideTimer = setTimeout(hideUI, UI_DELAY);
   }
 }
 
 function showUIpermanent() {
+  clearTimeout(uiHideTimer);
   const {nav} = getUIElements();
   if(nav) { nav.style.transform='translateY(0)'; nav.style.opacity='1'; }
-  clearTimeout(uiHideTimer);
 }
 
 function hideUI() {
@@ -1496,7 +1495,6 @@ function hideUI() {
   if(nav) { nav.style.transform='translateY(-100%)'; nav.style.opacity='0'; }
 }
 
-// Aplicar transiciones
 window.addEventListener('load', ()=>{
   const {nav} = getUIElements();
   if(nav) nav.style.transition='transform .4s ease, opacity .4s ease';
