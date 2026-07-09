@@ -573,7 +573,7 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 
 <!-- CARGADORES SCREEN -->
 <div class="screen" id="cargadores-screen" style="display:none; flex-direction:column; background:#141414;">
-  <iframe id="cargadoresFrame" style="flex:1;width:100%;border:none;background:#141414;"></iframe>
+  <div id="cargadoresMap" style="flex:1;width:100%;"></div>
 </div>
 
 <!-- JUEGOS SCREEN -->
@@ -725,6 +725,8 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
 <script>
 // ═══════════════════════════════════════════
@@ -819,7 +821,7 @@ function goTab(tab) {
     juegosVolver();
     showUIpermanent();
   } else if (tab==='cargadores') {
-    const f=document.getElementById('cargadoresFrame'); if(f && !f.src.includes('openchargemap')) f.src='https://map.openchargemap.io/#/map';
+    setTimeout(cargadoresInit, 100);
     showUIpermanent();
   } else if (tab==='clima') {
     const f=document.getElementById('climaFrame'); if(f && !f.src.includes('windy')) f.src='https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=°C&metricWind=km/h&zoom=6&overlay=wind&product=ecmwf&level=surface&lat=40.4&lon=-3.7&detailLat=40.4&detailLon=-3.7&detail=true&pressure=true&message=true';
@@ -1255,6 +1257,57 @@ https://bufaloweb.com/httpsCON/bufalo18/index.m3u8`;
 
 function cargarListaTexto(){const text=document.getElementById('listaTextInput').value.trim();if(!text){showToast('Pega el contenido M3U primero');return;}const parsed=parseM3U(text);if(!parsed.length){showToast('No se encontraron canales');return;}const existing=loadLista();const merged=[...existing];let added=0;parsed.forEach(ch=>{if(!merged.find(x=>x.url===ch.url)){merged.push(ch);added++;}});saveLista(merged);syncChannels();renderListaGrid();document.getElementById('listaTextInput').value='';showToast('✅ '+added+' canales importados');}
 function exportarLista(){const list=loadLista();if(!list.length){showToast('Sin canales que exportar');return;}let m3u='#EXTM3U\n';list.forEach(ch=>{m3u+='#EXTINF:-1,'+ch.name+'\n'+ch.url+'\n';});const blob=new Blob([m3u],{type:'audio/x-mpegurl'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mi_lista_tvcar.m3u';a.click();showToast('📥 Lista exportada');}
+
+// ═══════════════════════════════════════════
+// CARGADORES — MAPA SUPERCHARGERS
+// ═══════════════════════════════════════════
+let cargadoresMap = null;
+
+async function cargadoresInit() {
+  if (cargadoresMap) { cargadoresMap.invalidateSize(); return; }
+  const el = document.getElementById('cargadoresMap');
+  if (!el) return;
+
+  cargadoresMap = L.map('cargadoresMap', { zoomControl: true }).setView([40.4, -3.7], 6);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+    maxZoom: 18
+  }).addTo(cargadoresMap);
+
+  // Icono Tesla
+  const teslaIcon = L.divIcon({
+    html: '<div style="background:#e50914;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(229,9,20,.6);">⚡</div>',
+    className: '', iconSize: [28, 28], iconAnchor: [14, 14]
+  });
+
+  // Obtener ubicación del usuario
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      const lat = pos.coords.latitude, lon = pos.coords.longitude;
+      cargadoresMap.setView([lat, lon], 9);
+      L.marker([lat, lon], {
+        icon: L.divIcon({
+          html: '<div style="background:#4caf50;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 2px 6px rgba(76,175,80,.6);">🚗</div>',
+          className: '', iconSize: [22, 22], iconAnchor: [11, 11]
+        })
+      }).addTo(cargadoresMap).bindPopup('📍 Tu ubicación');
+
+      // Buscar Superchargers cercanos via Overpass API
+      const bbox = `${lat-2},${lon-3},${lat+2},${lon+3}`;
+      fetch(`https://overpass-api.de/api/interpreter?data=[out:json];node["amenity"="charging_station"]["network"="Tesla Supercharger"](${bbox});out;`)
+        .then(r => r.json())
+        .then(data => {
+          data.elements.forEach(n => {
+            L.marker([n.lat, n.lon], { icon: teslaIcon })
+              .addTo(cargadoresMap)
+              .bindPopup(`⚡ <b>Tesla Supercharger</b><br>${n.tags.name || ''}<br>${n.tags['addr:city'] || ''}`);
+          });
+          if (!data.elements.length) showToast('No se encontraron Superchargers cercanos');
+        }).catch(() => showToast('Error cargando Superchargers'));
+    }, () => showToast('Activa el GPS para ver cargadores cercanos'));
+  }
+}
 
 // ═══════════════════════════════════════════
 // JUEGOS
