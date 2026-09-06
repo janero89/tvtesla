@@ -332,6 +332,29 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 .pin-key { background:#222;border:1px solid #333;border-radius:10px;padding:16px;color:#fff;font-size:20px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s; }
 .pin-key:hover,.pin-key:active { background:var(--red);border-color:var(--red); }
 
+/* SONIDO */
+#sonido-screen { overflow-y:auto; background:#0a0a0a; padding:24px 24px 60px; flex-direction:column; align-items:center; gap:20px; }
+.snd-title { font-family:'Bebas Neue'; font-size:20px; letter-spacing:4px; color:#fff; text-align:center; }
+.snd-title span { color:var(--red); }
+.snd-profiles { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:12px; width:100%; max-width:620px; }
+.snd-profile { background:#1a1a1a; border:2px solid #2a2a2a; border-radius:12px; padding:16px 10px; text-align:center; cursor:pointer; transition:all .2s; }
+.snd-profile:hover { border-color:#555; }
+.snd-profile.active { border-color:var(--red); background:rgba(229,9,20,.12); }
+.snd-profile-emoji { font-size:30px; margin-bottom:6px; }
+.snd-profile-name { font-size:12px; font-weight:700; color:#fff; font-family:'Inter',sans-serif; }
+.snd-visual { width:100%; max-width:340px; height:90px; background:#111; border:1px solid #222; border-radius:10px; display:flex; align-items:flex-end; justify-content:center; gap:3px; padding:10px; }
+.snd-bar { width:6%; background:linear-gradient(to top,var(--red),#ff8a00); border-radius:2px; height:4%; transition:height .08s linear; }
+.snd-rpm { font-family:'Bebas Neue'; font-size:46px; color:#fff; letter-spacing:1px; }
+.snd-rpm-lbl { font-size:10px; color:#555; letter-spacing:3px; margin-top:-8px; }
+.snd-status { font-size:12px; color:#666; letter-spacing:1px; }
+.snd-controls { display:flex; gap:14px; }
+.snd-btn { background:var(--red); border:none; border-radius:50px; padding:14px 34px; color:#fff; font-family:'Bebas Neue'; font-size:18px; letter-spacing:2px; cursor:pointer; }
+.snd-btn.stop { background:#222; border:1px solid #333; color:#888; }
+.snd-vol-row { display:flex; align-items:center; gap:10px; width:100%; max-width:340px; }
+.snd-vol-row span { font-size:16px; }
+.snd-vol-row input { flex:1; }
+.snd-hint { font-size:10.5px; color:#3d3d3d; text-align:center; max-width:340px; line-height:1.6; }
+
 /* RESPONSIVE */
 @media(max-width:768px){
   :root{--nav-h:50px;}
@@ -407,6 +430,7 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
     <div class="nav-tab"        id="tab-checker"   onclick="goTab('checker')">🚚 Entrega</div>
     <div class="nav-tab"        id="tab-vincoder"  onclick="goTab('vincoder')">🔍 VIN</div>
     <div class="nav-tab"        id="tab-velocidad" onclick="goTab('velocidad')">⏱ 0-100</div>
+    <div class="nav-tab"        id="tab-sonido"    onclick="goTab('sonido')">🔊 Sonido</div>
     <div class="nav-tab"        id="tab-juegos"    onclick="goTab('juegos')">🎮 Juegos</div>
     <div class="nav-tab"        id="tab-cargadores" onclick="goTab('cargadores')">🔌 Ruta</div>
     <div class="nav-tab"        id="tab-clima"      onclick="goTab('clima')">🌤️ Clima</div>
@@ -639,6 +663,34 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
   </div>
 </div>
 
+<!-- SONIDO SCREEN -->
+<div class="screen" id="sonido-screen" style="display:none;">
+  <div class="snd-title">🔊 Sonido de <span>Motor</span></div>
+
+  <div class="snd-profiles" id="sndProfiles"></div>
+
+  <div class="snd-visual" id="sndVisual"></div>
+
+  <div style="text-align:center;">
+    <div class="snd-rpm" id="sndRpm">0</div>
+    <div class="snd-rpm-lbl">RPM SIMULADAS</div>
+  </div>
+
+  <div class="snd-status" id="sndStatus">Elige un motor y pulsa INICIAR</div>
+
+  <div class="snd-controls">
+    <button class="snd-btn" id="sndBtn" onclick="sndToggle()">INICIAR</button>
+  </div>
+
+  <div class="snd-vol-row">
+    <span>🔉</span>
+    <input type="range" id="sndVol" min="0" max="1" step="0.01" value="0.8" oninput="sndSetVolume(this.value)"/>
+    <span>🔊</span>
+  </div>
+
+  <div class="snd-hint">Al iniciar, acelera el coche: el sonido sube de RPM con la velocidad real (GPS). También puedes tocar el visualizador para acelerar manualmente sin conducir.</div>
+</div>
+
 <!-- PLAYER TV -->
 <div class="screen" id="player-screen" style="display:none;">
   <div class="player-wrap" id="playerWrap">
@@ -819,6 +871,8 @@ function goTab(tab) {
   if (tab==='lista')     { renderListaGrid(); showUIpermanent(); }
   if (tab==='peliculas') { if(!pelCargado) pelCargar(1); showUIpermanent(); }
   if (tab==='apps')      { showUIpermanent(); }
+  if (tab!=='sonido' && typeof sndStop === 'function') { sndStop(true); }
+  if (tab==='sonido')    { sndInit(); showUIpermanent(); }
   if (tab==='luz')       {
     const f=document.getElementById('luzFrame'); if(f && !f.src.includes('precio')) f.src='https://precio.mundotesla.com/';
     showUIpermanent();
@@ -1430,6 +1484,174 @@ function velDibujarArco(kmh) {
 
 // Dibujar arco vacío al cargar
 window.addEventListener('load', () => { setTimeout(()=>velDibujarArco(0), 500); });
+
+// ═══════════════════════════════════════════
+// SONIDO DE MOTOR — sintetizado con Web Audio API
+// ═══════════════════════════════════════════
+const SND_PROFILES = [
+  { id:'diesel',   name:'Diésel',      emoji:'🚛', minHz:38,  maxHz:130, wave:'sawtooth', noise:0.55, harmShift:0.5,  idleHz:32 },
+  { id:'gas',      name:'Gasolina',    emoji:'🚗', minHz:55,  maxHz:220, wave:'sawtooth', noise:0.22, harmShift:1,    idleHz:45 },
+  { id:'sport',    name:'Deportivo',   emoji:'🏎️', minHz:80,  maxHz:340, wave:'square',   noise:0.16, harmShift:1.5, idleHz:65 },
+  { id:'f1',       name:'Fórmula 1',   emoji:'🏁', minHz:180, maxHz:950, wave:'sawtooth', noise:0.08, harmShift:2.2, idleHz:150 },
+  { id:'electric', name:'Eléctrico',   emoji:'⚡', minHz:200, maxHz:1400,wave:'sine',     noise:0.03, harmShift:3,   idleHz:180 },
+  { id:'muscle',   name:'V8 Muscle',   emoji:'💪', minHz:45,  maxHz:190, wave:'sawtooth', noise:0.35, harmShift:0.75,idleHz:38 },
+];
+
+let sndCtx=null, sndOsc1=null, sndOsc2=null, sndOsc3=null, sndGain=null, sndNoiseSrc=null, sndNoiseGain=null, sndFilter=null;
+let sndProfile = SND_PROFILES[0];
+let sndRunning = false;
+let sndGeoWatch = null;
+let sndManualRpm = 0;
+let sndAnimFrame = null;
+let sndCurrentHz = 0;
+
+function sndInit() {
+  const wrap = document.getElementById('sndProfiles');
+  if (wrap.children.length === 0) {
+    SND_PROFILES.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'snd-profile' + (p.id === sndProfile.id ? ' active' : '');
+      card.id = 'sndp-' + p.id;
+      card.innerHTML = `<div class="snd-profile-emoji">${p.emoji}</div><div class="snd-profile-name">${p.name}</div>`;
+      card.onclick = () => sndSelectProfile(p.id);
+      wrap.appendChild(card);
+    });
+  }
+  const vis = document.getElementById('sndVisual');
+  if (vis.children.length === 0) {
+    for (let i=0;i<24;i++){ const b=document.createElement('div'); b.className='snd-bar'; vis.appendChild(b); }
+    // Tocar el visualizador acelera manualmente (útil si no conduces)
+    let holding = false;
+    const bump = () => { sndManualRpm = Math.min(sndManualRpm + 10, 100); };
+    vis.addEventListener('mousedown', ()=>{holding=true;});
+    vis.addEventListener('mouseup', ()=>{holding=false;});
+    vis.addEventListener('mouseleave', ()=>{holding=false;});
+    vis.addEventListener('touchstart', (e)=>{holding=true; e.preventDefault();}, {passive:false});
+    vis.addEventListener('touchend', ()=>{holding=false;});
+    setInterval(()=>{ if(holding) bump(); else sndManualRpm = Math.max(sndManualRpm - 4, 0); }, 60);
+  }
+}
+
+function sndSelectProfile(id) {
+  sndProfile = SND_PROFILES.find(p => p.id === id) || SND_PROFILES[0];
+  document.querySelectorAll('.snd-profile').forEach(el => el.classList.remove('active'));
+  document.getElementById('sndp-' + id).classList.add('active');
+  if (sndRunning) { sndStop(); sndStart(); }
+}
+
+function sndToggle() {
+  if (sndRunning) sndStop(); else sndStart();
+}
+
+function sndStart() {
+  if (sndRunning) return;
+  sndCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  sndGain = sndCtx.createGain();
+  sndGain.gain.value = parseFloat(document.getElementById('sndVol').value);
+  sndGain.connect(sndCtx.destination);
+
+  sndFilter = sndCtx.createBiquadFilter();
+  sndFilter.type = 'lowpass';
+  sndFilter.frequency.value = 1200;
+  sndFilter.connect(sndGain);
+
+  // Osciladores: fundamental + 2 armónicos para dar cuerpo al motor
+  sndOsc1 = sndCtx.createOscillator();
+  sndOsc1.type = sndProfile.wave;
+  sndOsc1.frequency.value = sndProfile.idleHz;
+  const g1 = sndCtx.createGain(); g1.gain.value = 0.5;
+  sndOsc1.connect(g1); g1.connect(sndFilter);
+
+  sndOsc2 = sndCtx.createOscillator();
+  sndOsc2.type = sndProfile.wave;
+  sndOsc2.frequency.value = sndProfile.idleHz * 2 * sndProfile.harmShift;
+  const g2 = sndCtx.createGain(); g2.gain.value = 0.22;
+  sndOsc2.connect(g2); g2.connect(sndFilter);
+
+  sndOsc3 = sndCtx.createOscillator();
+  sndOsc3.type = 'sine';
+  sndOsc3.frequency.value = sndProfile.idleHz * 0.5;
+  const g3 = sndCtx.createGain(); g3.gain.value = 0.3;
+  sndOsc3.connect(g3); g3.connect(sndFilter);
+
+  // Ruido para el "clatter" diésel / roce mecánico
+  const bufSize = sndCtx.sampleRate * 2;
+  const buf = sndCtx.createBuffer(1, bufSize, sndCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i=0;i<bufSize;i++) data[i] = Math.random()*2-1;
+  sndNoiseSrc = sndCtx.createBufferSource();
+  sndNoiseSrc.buffer = buf; sndNoiseSrc.loop = true;
+  sndNoiseGain = sndCtx.createGain();
+  sndNoiseGain.gain.value = sndProfile.noise * 0.25;
+  sndNoiseSrc.connect(sndNoiseGain); sndNoiseGain.connect(sndFilter);
+
+  sndOsc1.start(); sndOsc2.start(); sndOsc3.start(); sndNoiseSrc.start();
+
+  sndRunning = true;
+  document.getElementById('sndBtn').textContent = 'DETENER';
+  document.getElementById('sndBtn').classList.add('stop');
+  document.getElementById('sndStatus').textContent = 'Motor en marcha — acelera';
+  sndManualRpm = 0;
+
+  if (navigator.geolocation) {
+    sndGeoWatch = navigator.geolocation.watchPosition(pos => {
+      const kmh = (pos.coords.speed || 0) * 3.6;
+      sndManualRpm = Math.max(sndManualRpm, Math.min(kmh, 220) / 220 * 100);
+    }, ()=>{}, { enableHighAccuracy:true, maximumAge:0, timeout:5000 });
+  }
+
+  sndLoop();
+}
+
+function sndLoop() {
+  if (!sndRunning) return;
+  // Suavizar hacia el rpm objetivo (0-100)
+  const target = sndManualRpm;
+  sndCurrentHz += (target - sndCurrentHz) * 0.08;
+  const pct = Math.max(0, Math.min(sndCurrentHz, 100)) / 100;
+
+  const hz = sndProfile.idleHz + pct * (sndProfile.maxHz - sndProfile.minHz);
+  const now = sndCtx.currentTime;
+  sndOsc1.frequency.setTargetAtTime(hz, now, 0.05);
+  sndOsc2.frequency.setTargetAtTime(hz * 2 * sndProfile.harmShift, now, 0.05);
+  sndOsc3.frequency.setTargetAtTime(hz * 0.5, now, 0.05);
+  sndFilter.frequency.setTargetAtTime(800 + pct * 4000, now, 0.08);
+  sndNoiseGain.gain.setTargetAtTime(sndProfile.noise * (0.15 + pct*0.35), now, 0.1);
+
+  document.getElementById('sndRpm').textContent = Math.round(1000 + pct * 7500);
+  const bars = document.querySelectorAll('#sndVisual .snd-bar');
+  bars.forEach((b,i) => {
+    const wobble = Math.sin(Date.now()/60 + i) * 8;
+    const h = Math.max(4, Math.min(100, pct*90 + wobble + (Math.random()*6)));
+    b.style.height = h + '%';
+  });
+
+  sndAnimFrame = requestAnimationFrame(sndLoop);
+}
+
+function sndStop(silent) {
+  sndRunning = false;
+  cancelAnimationFrame(sndAnimFrame);
+  if (sndGeoWatch !== null && navigator.geolocation) { navigator.geolocation.clearWatch(sndGeoWatch); sndGeoWatch = null; }
+  if (sndCtx) {
+    try { sndOsc1.stop(); sndOsc2.stop(); sndOsc3.stop(); sndNoiseSrc.stop(); } catch(e){}
+    sndCtx.close().catch(()=>{});
+    sndCtx = null;
+  }
+  sndCurrentHz = 0; sndManualRpm = 0;
+  const btn = document.getElementById('sndBtn');
+  if (btn) { btn.textContent = 'INICIAR'; btn.classList.remove('stop'); }
+  const st = document.getElementById('sndStatus');
+  if (st && !silent) st.textContent = 'Elige un motor y pulsa INICIAR';
+  document.querySelectorAll('#sndVisual .snd-bar').forEach(b => b.style.height='4%');
+  const rpm = document.getElementById('sndRpm'); if (rpm) rpm.textContent = '0';
+}
+
+function sndSetVolume(v) {
+  if (sndGain) sndGain.gain.value = parseFloat(v);
+}
+
 document.addEventListener('keydown',e=>{
   if(document.getElementById('pel-player').style.display==='block'&&e.key==='Escape'){pelCerrar();return;}
   if(document.getElementById('player-screen').style.display==='flex'){
