@@ -439,6 +439,7 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
     <div class="nav-tab"        id="tab-velocidad" onclick="goTab('velocidad')">⏱ 0-100</div>
     <div class="nav-tab"        id="tab-sonido"    onclick="goTab('sonido')">🔊 Sonido</div>
     <div class="nav-tab"        id="tab-juegos"    onclick="goTab('juegos')">🎮 Juegos</div>
+    <div class="nav-tab"        id="tab-mirror"    onclick="goTab('mirror')">🪞 Mirror</div>
     <div class="nav-tab"        id="tab-cargadores" onclick="goTab('cargadores')">🔌 Ruta</div>
     <div class="nav-tab"        id="tab-clima"      onclick="goTab('clima')">🌤️ Clima</div>
     <div class="nav-tab"        id="tab-referido"  onclick="document.getElementById('teslaRefModal').classList.add('open')">🚗 Referido</div>
@@ -596,6 +597,11 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 <!-- VINCODER SCREEN -->
 <div class="screen" id="vincoder-screen" style="display:none; flex-direction:column; background:#141414;">
   <iframe id="vincoderFrame" style="flex:1;width:100%;border:none;background:#141414;"></iframe>
+</div>
+
+<!-- MIRROR SCREEN -->
+<div class="screen" id="mirror-screen" style="display:none; flex-direction:column; background:#000;">
+  <iframe id="mirrorFrame" style="flex:1;width:100%;border:none;background:#000;" allow="autoplay; fullscreen"></iframe>
 </div>
 
 <!-- CLIMA SCREEN -->
@@ -894,6 +900,9 @@ function goTab(tab) {
     showUIpermanent();
   } else if (tab==='juegos') {
     juegosVolver();
+    showUIpermanent();
+  } else if (tab==='mirror') {
+    const f=document.getElementById('mirrorFrame'); if(f && !f.src.includes('teslitamirror')) f.src='https://teslitamirror-production.up.railway.app/';
     showUIpermanent();
   } else if (tab==='cargadores') {
     showUIpermanent();
