@@ -419,6 +419,10 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 
 <div class="toast" id="toast"></div>
 
+<div id="appFsBtn" onclick="toggleAppFullscreen()" style="position:fixed; top:0; right:0; height:var(--nav-h); display:flex; align-items:center; gap:7px; padding:0 20px; background:rgba(20,20,20,.97); border-left:1px solid #222; z-index:110; cursor:pointer; font-size:13px; font-weight:700; color:var(--text2); letter-spacing:.5px; backdrop-filter:blur(10px); user-select:none;">
+  <span id="appFsIcon">⛶</span><span id="appFsLabel">Pantalla completa</span>
+</div>
+
 <nav class="main-nav">
   <div class="nav-logo" onclick="goTab('tv')">TV<span>TESLA</span></div>
   <div class="nav-tabs">
@@ -1729,11 +1733,36 @@ document.addEventListener('mousemove', ()=>{ if(document.getElementById('player-
 </div><!-- /appRoot -->
 
 <script>
-// Si viene con ?fs=1 (desde YouTube) mostrar la app, si no mostrar pantalla de lanzamiento
-if(new URLSearchParams(window.location.search).get('fs')==='1'){
-  document.getElementById('launchScreen').style.display = 'none';
-  document.getElementById('appRoot').style.display = 'block';
+// La app se abre directamente, sin la pantalla de lanzamiento intermedia
+document.getElementById('launchScreen').style.display = 'none';
+document.getElementById('appRoot').style.display = 'block';
+
+function toggleAppFullscreen(){
+  const isFs = !!document.fullscreenElement || !!document.webkitFullscreenElement || !!document.mozFullScreenElement;
+  if(isFs){
+    const exit = document.exitFullscreen || document.webkitExitFullscreen || document.webkitCancelFullScreen || document.mozCancelFullScreen;
+    if(exit) exit.call(document).catch(()=>{});
+  } else {
+    const el = document.documentElement;
+    const req = el.requestFullscreen || el.webkitRequestFullscreen || el.webkitEnterFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+    if(req){
+      const p = req.call(el);
+      if(p && p.catch) p.catch(()=>{ if(typeof showToast==='function') showToast('⚠ Pantalla completa no disponible'); });
+    } else if(typeof showToast==='function') {
+      showToast('⚠ Pantalla completa no disponible');
+    }
+  }
 }
+function updateAppFsBtn(){
+  const isFs = !!document.fullscreenElement || !!document.webkitFullscreenElement || !!document.mozFullScreenElement;
+  const icon = document.getElementById('appFsIcon');
+  const lbl = document.getElementById('appFsLabel');
+  if(icon) icon.textContent = isFs ? '⊡' : '⛶';
+  if(lbl) lbl.textContent = isFs ? 'Salir de pantalla completa' : 'Pantalla completa';
+}
+document.addEventListener('fullscreenchange', updateAppFsBtn);
+document.addEventListener('webkitfullscreenchange', updateAppFsBtn);
+document.addEventListener('mozfullscreenchange', updateAppFsBtn);
 </script>
 </body>
 </html>
