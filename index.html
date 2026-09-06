@@ -419,8 +419,11 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 
 <div class="toast" id="toast"></div>
 
-<div id="appFsBtn" onclick="toggleAppFullscreen()" style="position:fixed; top:0; right:0; height:var(--nav-h); display:flex; align-items:center; gap:7px; padding:0 20px; background:rgba(20,20,20,.97); border-left:1px solid #222; z-index:110; cursor:pointer; font-size:13px; font-weight:700; color:var(--text2); letter-spacing:.5px; backdrop-filter:blur(10px); user-select:none;">
-  <span id="appFsIcon">⛶</span><span id="appFsLabel">Pantalla completa</span>
+<div id="appFsBar" style="position:fixed; top:0; right:0; height:var(--nav-h); display:flex; align-items:center; z-index:110; backdrop-filter:blur(10px); user-select:none;">
+  <div id="appYtBtn" onclick="abrirSinBarraYoutube()" title="Trata de abrir sin la barra de direcciones del navegador" style="height:100%; display:flex; align-items:center; gap:6px; padding:0 16px; background:rgba(20,20,20,.97); border-left:1px solid #222; cursor:pointer; font-size:12px; font-weight:700; color:var(--text2); letter-spacing:.5px; white-space:nowrap;">🔗 Sin barra</div>
+  <div id="appFsBtn" onclick="toggleAppFullscreen()" style="height:100%; display:flex; align-items:center; gap:7px; padding:0 20px; background:rgba(20,20,20,.97); border-left:1px solid #222; cursor:pointer; font-size:13px; font-weight:700; color:var(--text2); letter-spacing:.5px; white-space:nowrap;">
+    <span id="appFsIcon">⛶</span><span id="appFsLabel">Pantalla completa</span>
+  </div>
 </div>
 
 <nav class="main-nav">
@@ -1737,6 +1740,10 @@ document.addEventListener('mousemove', ()=>{ if(document.getElementById('player-
 document.getElementById('launchScreen').style.display = 'none';
 document.getElementById('appRoot').style.display = 'block';
 
+function abrirSinBarraYoutube(){
+  const target = location.origin + location.pathname + '?fs=1';
+  window.location.href = 'https://www.youtube.com/redirect?q=' + encodeURIComponent(target);
+}
 function toggleAppFullscreen(){
   const isFs = !!document.fullscreenElement || !!document.webkitFullscreenElement || !!document.mozFullScreenElement;
   if(isFs){
