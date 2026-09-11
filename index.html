@@ -483,11 +483,12 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 
 <!-- PLAYER PELÍCULAS -->
 <div id="pel-player">
-  <iframe id="pel-frame" allowfullscreen allow="autoplay; fullscreen; picture-in-picture" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-popups"></iframe>
+  <iframe id="pel-frame" allowfullscreen allow="autoplay; fullscreen; picture-in-picture" referrerpolicy="no-referrer"></iframe>
   <div class="pel-player-ctrl">
     <button class="pel-back-btn" onclick="pelCerrar()">← Volver</button>
     <span class="pel-now-title" id="pelNowTitle"></span>
     <span class="pel-now-year"  id="pelNowYear"></span>
+    <button class="pel-back-btn" id="pelServerBtn" onclick="pelCambiarServidor()" style="margin-left:auto;">🔄 Servidor: VidSrc</button>
   </div>
 </div>
 
@@ -1155,13 +1156,32 @@ function pelRenderPag(actual, total) {
   if(actual<total)add(actual+1,'Siguiente →');
 }
 
+const PEL_PROVIDERS = [
+  { name:'VidSrc',    build:id=>`https://vidsrc.pm/embed/movie/${id}?ds_lang=es` },
+  { name:'VidSrc API',build:id=>`https://vidsrcapi.com/embed/movie/${id}` },
+  { name:'2Embed',    build:id=>`https://www.2embed.cc/embed/${id}` },
+  { name:'VidSrc CC', build:id=>`https://vidsrc.cc/v2/embed/movie/${id}` },
+];
+let pelProviderIdx = 0, pelCurrentTmdbId = null;
+
 function pelAbrir(tmdbId, title, year) {
   pelScrollY=document.querySelector('.pel-grid-wrap').scrollTop;
+  pelCurrentTmdbId = tmdbId;
   document.getElementById('pelNowTitle').textContent=title;
   document.getElementById('pelNowYear').textContent=year;
-  document.getElementById('pel-frame').src=`https://vidsrc.pm/embed/movie/${tmdbId}?ds_lang=es`;
+  document.getElementById('pel-frame').src=PEL_PROVIDERS[pelProviderIdx].build(tmdbId);
+  document.getElementById('pelServerBtn').textContent='🔄 Servidor: '+PEL_PROVIDERS[pelProviderIdx].name;
   document.getElementById('pel-player').style.display='block';
   window.scrollTo({top:0});
+}
+
+function pelCambiarServidor() {
+  if (pelCurrentTmdbId===null) return;
+  pelProviderIdx = (pelProviderIdx + 1) % PEL_PROVIDERS.length;
+  const p = PEL_PROVIDERS[pelProviderIdx];
+  document.getElementById('pelServerBtn').textContent='🔄 Servidor: '+p.name;
+  document.getElementById('pel-frame').src=p.build(pelCurrentTmdbId);
+  showToast('▶ Probando servidor: '+p.name);
 }
 
 function pelCerrar() {
